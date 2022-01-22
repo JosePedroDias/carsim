@@ -1,6 +1,7 @@
 # carsim
 
-This is me playing with ammo.js and threejs to attempt a KISS 3D physics car sim
+This is me playing with ammo.js and threejs to attempt a KISS 3D physics car sim.
+This is my nth attempt so don't expect too much...
 
 
 ## log
@@ -8,7 +9,38 @@ This is me playing with ammo.js and threejs to attempt a KISS 3D physics car sim
 - copied raycast-vehicle-demo into demo1
 - created simplest d.ts file
 - changed things to const/let and dropped unused vars
-- adding heightmap terrain from terrain demo
+- added heightmap terrain and raining objects from terrain demo
+
+
+## potential todo list
+- car
+    - play with car rig (dimensions, materials and params)
+    - car mods and visuals (rally, offroad, bus)
+- physics
+    - detect passing through waypoints
+- controls
+    - reposition car action
+    - optional gamepad API
+    - check if it works with wheel
+- camera
+    - implement cameras:
+        - fixed point - look at car
+        - driver - attached to car
+        - chase cam
+- gui
+    - basic velocimeter overlay
+- sound generation
+    - engine sound
+    - braking
+    - collisions
+- eyecandy
+    - decals
+    - particle generation for dirt and/or smoke
+- track
+    - custom heightmap and texture
+    - parametric roads
+- organization
+    - refactor demo to abstract complexity
 
 
 ## reference

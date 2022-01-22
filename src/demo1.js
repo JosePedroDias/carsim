@@ -79,7 +79,7 @@ Ammo().then((Ammo) => {
             scene.add( terrainMesh );
 
             const textureLoader = new THREE.TextureLoader();
-            textureLoader.load("../textures/grid.png", (texture) => {
+            textureLoader.load('./textures/grid.png', (texture) => {
                 texture.wrapS = THREE.RepeatWrapping;
                 texture.wrapT = THREE.RepeatWrapping;
                 texture.repeat.set( terrainWidth - 1, terrainDepth - 1 );

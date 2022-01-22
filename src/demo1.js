@@ -6,6 +6,17 @@ Ammo().then((Ammo) => {
     const TRANSFORM_AUX = new Ammo.btTransform();
     const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
 
+    // Heightfield parameters
+    const terrainWidthExtents = 100;
+    const terrainDepthExtents = 100;
+    const terrainWidth = 128;
+    const terrainDepth = 128;
+    const terrainMaxHeight = 1;
+    const terrainMinHeight = -1;
+    let terrainMesh;
+    let heightData;
+    let ammoHeightData;
+
     // Graphics constiables
     let stats, speedometer;
     let camera, controls, scene, renderer;
@@ -48,6 +59,34 @@ Ammo().then((Ammo) => {
         camera.position.z = -35.11;
         camera.lookAt(new THREE.Vector3(0.33, -0.40, 0.85));
         controls = new THREE.OrbitControls(camera);
+
+
+        // new terrain
+        {
+            const geometry = new THREE.PlaneBufferGeometry( 100, 100, terrainWidth - 1, terrainDepth - 1 );
+            geometry.rotateX( - Math.PI / 2 );
+
+            const vertices = geometry.attributes.position.array;
+            for ( let i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3 ) {
+                // j + 1 because it is the y component that we modify
+                vertices[ j + 1 ] = heightData[ i ];
+            }
+            geometry.computeVertexNormals();
+
+            const groundMaterial = new THREE.MeshPhongMaterial( { color: 0xC7C7C7 } );
+            terrainMesh = new THREE.Mesh( geometry, groundMaterial );
+            scene.add( terrainMesh );
+
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load("../textures/grid.png", (texture) => {
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set( terrainWidth - 1, terrainDepth - 1 );
+                groundMaterial.map = texture;
+                groundMaterial.needsUpdate = true;
+            });
+        }
+        
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setClearColor(0xbfd1e5);
@@ -92,6 +131,18 @@ Ammo().then((Ammo) => {
         solver = new Ammo.btSequentialImpulseConstraintSolver();
         physicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
         physicsWorld.setGravity(new Ammo.btVector3(0, -9.82, 0));
+
+        // Create the terrain body
+        const groundShape = createTerrainShape( heightData );
+        const groundTransform = new Ammo.btTransform();
+        groundTransform.setIdentity();
+        // Shifts the terrain, since bullet re-centers it on its bounding box.
+        groundTransform.setOrigin( new Ammo.btVector3( 0, ( terrainMaxHeight + terrainMinHeight ) / 2, 0 ) );
+        const groundMass = 0;
+        const groundLocalInertia = new Ammo.btVector3( 0, 0, 0 );
+        const groundMotionState = new Ammo.btDefaultMotionState( groundTransform );
+        const groundBody = new Ammo.btRigidBody( new Ammo.btRigidBodyConstructionInfo( groundMass, groundMotionState, groundShape, groundLocalInertia ) );
+        physicsWorld.addRigidBody( groundBody );
     }
 
     function tick() {
@@ -350,24 +401,112 @@ Ammo().then((Ammo) => {
         syncList.push(sync);
     }
 
-    function createObjects() {
-        createBox(new THREE.Vector3(0, -0.5, 0), ZERO_QUATERNION, 75, 1, 75, 0, 2);
+    function generateHeight( width, depth, minHeight, maxHeight) {
+        // Generates the height data (a sinus wave)
+        const size = width * depth;
+        const data = new Float32Array( size );
 
+        const hRange = maxHeight - minHeight;
+        const w2 = width / 2;
+        const d2 = depth / 2;
+        const phaseMult = 12;
+
+        let p = 0;
+        for ( let j = 0; j < depth; j ++ ) {
+            for ( let i = 0; i < width; i ++ ) {
+                const radius = Math.sqrt(
+                    Math.pow( ( i - w2 ) / w2, 2.0 ) +
+                    Math.pow( ( j - d2 ) / d2, 2.0 ) );
+
+                const height = ( Math.sin( radius * phaseMult ) + 1 ) * 0.5  * hRange + minHeight;
+                data[ p ] = height;
+                p++;
+            }
+        }
+
+        return data;
+    }
+
+    function createTerrainShape(heightData) {
+        // This parameter is not really used, since we are using PHY_FLOAT height data type and hence it is ignored
+        const heightScale = 1;
+
+        // Up axis = 0 for X, 1 for Y, 2 for Z. Normally 1 = Y is used.
+        const upAxis = 1;
+
+        // hdt, height data type. "PHY_FLOAT" is used. Possible values are "PHY_FLOAT", "PHY_UCHAR", "PHY_SHORT"
+        const hdt = "PHY_FLOAT";
+
+        // Set this to your needs (inverts the triangles)
+        const flipQuadEdges = false;
+
+        // Creates height data buffer in Ammo heap
+        ammoHeightData = Ammo._malloc( 4 * terrainWidth * terrainDepth );
+
+        // Copy the javascript height data array to the Ammo one.
+        let p = 0;
+        let p2 = 0;
+        for ( let j = 0; j < terrainDepth; j ++ ) {
+            for ( let i = 0; i < terrainWidth; i ++ ) {
+                // write 32-bit float data to memory
+                Ammo.HEAPF32[ammoHeightData + p2 >> 2] = heightData[ p ];
+                p ++;
+                // 4 bytes/float
+                p2 += 4;
+            }
+        }
+
+        // Creates the heightfield physics shape
+        const heightFieldShape = new Ammo.btHeightfieldTerrainShape(
+            terrainWidth,
+            terrainDepth,
+
+            ammoHeightData,
+
+            heightScale,
+            terrainMinHeight,
+            terrainMaxHeight,
+
+            upAxis,
+            hdt,
+            flipQuadEdges
+        );
+
+        // Set horizontal scale
+        const scaleX = terrainWidthExtents / ( terrainWidth - 1 );
+        const scaleZ = terrainDepthExtents / ( terrainDepth - 1 );
+        heightFieldShape.setLocalScaling( new Ammo.btVector3( scaleX, 1, scaleZ ) );
+
+        heightFieldShape.setMargin( 0.05 );
+
+        return heightFieldShape;
+    }
+
+    function createObjects() {
+        // ground
+        //createBox(new THREE.Vector3(0, -0.5, 0), ZERO_QUATERNION, 75, 1, 75, 0, 2);
+
+        // ramp
         const quaternion = new THREE.Quaternion(0, 0, 0, 1);
         quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 18);
         createBox(new THREE.Vector3(0, -1.5, 0), quaternion, 8, 4, 10, 0);
 
-        const size = .75;
-        const nw = 8;
-        const nh = 6;
-        for (let j = 0; j < nw; j++)
-            for (let i = 0; i < nh; i++)
-                createBox(new THREE.Vector3(size * j - (size * (nw - 1)) / 2, size * i, 10), ZERO_QUATERNION, size, size, size, 10);
-
+        // box wall
+        if (false) {
+            const size = .75;
+            const nw = 8;
+            const nh = 6;
+            for (let j = 0; j < nw; j++)
+                for (let i = 0; i < nh; i++)
+                    createBox(new THREE.Vector3(size * j - (size * (nw - 1)) / 2, size * i, 10), ZERO_QUATERNION, size, size, size, 10);
+        }
+        
+        // car
         createVehicle(new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
     }
 
     // - Init -
+    heightData = generateHeight(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight);
     initGraphics();
     initPhysics();
     createObjects();

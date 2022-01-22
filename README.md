@@ -6,6 +6,7 @@
 - copied raycast-vehicle-demo into demo1
 - created simplest d.ts file
 - changed things to const/let and dropped unused vars
+- adding heightmap terrain from terrain demo
 
 
 ## reference

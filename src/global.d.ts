@@ -1,4 +1,8 @@
 interface Three {
+    SphereGeometry: any;
+    PlaneBufferGeometry: any;
+    TextureLoader: any;
+    RepeatWrapping: any;
     Quaternion: any;
     Clock: any;
     Scene: any;
@@ -21,6 +25,12 @@ class Stats {
 }
 
 interface Ammo_ {
+    btSphereShape: any;
+    btCylinderShape: any;
+    btConeShape: any;
+    _malloc(arg0: number): any;
+    HEAPF32: any;
+    btHeightfieldTerrainShape: any;
     btTransform: any;
     btDefaultCollisionConfiguration: any;
     btCollisionDispatcher: any;

@@ -1,5 +1,7 @@
 # carsim
 
+This is me playing with ammo.js and threejs to attempt a KISS 3D physics car sim
+
 
 ## log
 - got everything from https://github.com/kripken/ammo.js

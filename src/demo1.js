@@ -20,7 +20,6 @@ Ammo().then((Ammo) => {
     // Graphics constiables
     let stats, speedometer;
     let camera, controls, scene, renderer;
-    //let terrainMesh, texture;
     const clock = new THREE.Clock();
     let materialDynamic, materialStatic, materialInteractive;
 
@@ -30,12 +29,14 @@ Ammo().then((Ammo) => {
     let broadphase;
     let solver;
     let physicsWorld;
+    const dynamicObjects = [];
+    const transformAux1 = new Ammo.btTransform();
 
     const syncList = [];
     let time = 0;
-    //const objectTimePeriod = 3;
-    //const timeNextSpawn = time + objectTimePeriod;
-    //const maxNumObjects = 30;
+    const objectTimePeriod = 3;
+    let timeNextSpawn = time + objectTimePeriod;
+    const maxNumObjects = 30;
 
     // Keybord actions
     const actions = {};
@@ -148,9 +149,31 @@ Ammo().then((Ammo) => {
     function tick() {
         requestAnimationFrame(tick);
         const dt = clock.getDelta();
+
+        if ( dynamicObjects.length < maxNumObjects && time > timeNextSpawn ) {
+            generateObject();
+            timeNextSpawn = time + objectTimePeriod;
+        }
+
         for (let i = 0; i < syncList.length; i++)
             syncList[i](dt);
+        
         physicsWorld.stepSimulation(dt, 10);
+
+        // Update objects
+        for ( let i = 0, il = dynamicObjects.length; i < il; i++ ) {
+            const objThree = dynamicObjects[ i ];
+            const objPhys = objThree.userData.physicsBody;
+            const ms = objPhys.getMotionState();
+            if ( ms ) {
+                ms.getWorldTransform( transformAux1 );
+                var p = transformAux1.getOrigin();
+                var q = transformAux1.getRotation();
+                objThree.position.set( p.x(), p.y(), p.z() );
+                objThree.quaternion.set( q.x(), q.y(), q.z(), q.w() );
+            }
+        }
+
         controls.update(dt);
         renderer.render(scene, camera);
         time += dt;
@@ -480,6 +503,84 @@ Ammo().then((Ammo) => {
         heightFieldShape.setMargin( 0.05 );
 
         return heightFieldShape;
+    }
+
+    function generateObject() {
+        const numTypes = 4;
+        const objectType = Math.ceil( Math.random() * numTypes );
+
+        let threeObject = null;
+        let shape = null;
+
+        const objectSize = 3;
+        const margin = 0.05;
+
+        switch ( objectType ) {
+            case 1:
+                {
+                    // Sphere
+                    const radius = 1 + Math.random() * objectSize;
+                    threeObject = new THREE.Mesh( new THREE.SphereGeometry( radius, 20, 20 ), createObjectMaterial() );
+                    shape = new Ammo.btSphereShape( radius );
+                    shape.setMargin( margin );
+                    break;
+                }
+            case 2:
+                {
+                    // Box
+                    const sx = 1 + Math.random() * objectSize;
+                    const sy = 1 + Math.random() * objectSize;
+                    const sz = 1 + Math.random() * objectSize;
+                    threeObject = new THREE.Mesh( new THREE.BoxGeometry( sx, sy, sz, 1, 1, 1 ), createObjectMaterial() );
+                    shape = new Ammo.btBoxShape( new Ammo.btVector3( sx * 0.5, sy * 0.5, sz * 0.5 ) );
+                    shape.setMargin( margin );
+                    break;
+                }
+            case 3:
+                {
+                    // Cylinder
+                    const radius = 1 + Math.random() * objectSize;
+                    const height = 1 + Math.random() * objectSize;
+                    threeObject = new THREE.Mesh( new THREE.CylinderGeometry( radius, radius, height, 20, 1 ), createObjectMaterial() );
+                    shape = new Ammo.btCylinderShape( new Ammo.btVector3( radius, height * 0.5, radius ) );
+                    shape.setMargin( margin );
+                    break;
+                }
+            default:
+                {
+                    // Cone
+                    const radius = 1 + Math.random() * objectSize;
+                    const height = 2 + Math.random() * objectSize;
+                    threeObject = new THREE.Mesh( new THREE.CylinderGeometry( 0, radius, height, 20, 2 ), createObjectMaterial() );
+                    shape = new Ammo.btConeShape( radius, height );
+                    break;
+                } 
+        }
+
+        threeObject.position.set( ( Math.random() - 0.5 ) * terrainWidth * 0.6, terrainMaxHeight + objectSize + 2, ( Math.random() - 0.5 ) * terrainDepth * 0.6 );
+
+        const mass = objectSize * 5;
+        const localInertia = new Ammo.btVector3( 0, 0, 0 );
+        shape.calculateLocalInertia( mass, localInertia );
+        const transform = new Ammo.btTransform();
+        transform.setIdentity();
+        const pos = threeObject.position;
+        transform.setOrigin( new Ammo.btVector3( pos.x, pos.y, pos.z ) );
+        const motionState = new Ammo.btDefaultMotionState( transform );
+        const rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, shape, localInertia );
+        const body = new Ammo.btRigidBody( rbInfo );
+
+        threeObject.userData.physicsBody = body;
+
+        scene.add( threeObject );
+        dynamicObjects.push( threeObject );
+
+        physicsWorld.addRigidBody( body );
+    }
+
+    function createObjectMaterial() {
+        var c = Math.floor( Math.random() * ( 1 << 24 ) );
+        return new THREE.MeshPhongMaterial( { color: c } );
     }
 
     function createObjects() {

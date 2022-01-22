@@ -1,19 +1,13 @@
 // @ts-check
 
 Ammo().then((Ammo) => {
-    // Detects webgl
-    if (!Detector.webgl) {
-        Detector.addGetWebGLMessage();
-        document.getElementById('container').innerHTML = "";
-    }
-
     // - Global constiables -
     const DISABLE_DEACTIVATION = 4;
     const TRANSFORM_AUX = new Ammo.btTransform();
     const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
 
     // Graphics constiables
-    let container, stats, speedometer;
+    let stats, speedometer;
     let camera, controls, scene, renderer;
     //let terrainMesh, texture;
     const clock = new THREE.Clock();
@@ -44,7 +38,6 @@ Ammo().then((Ammo) => {
     // - Functions -
 
     function initGraphics() {
-        container = document.getElementById('container');
         speedometer = document.getElementById('speedometer');
 
         scene = new THREE.Scene();
@@ -72,14 +65,12 @@ Ammo().then((Ammo) => {
         materialStatic = new THREE.MeshPhongMaterial({ color: 0x999999 });
         materialInteractive = new THREE.MeshPhongMaterial({ color: 0x990000 });
 
-        container.innerHTML = "";
-
-        container.appendChild(renderer.domElement);
+        document.body.appendChild(renderer.domElement);
 
         stats = new Stats(); 
         stats.domElement.style.position = 'absolute';
         stats.domElement.style.top = '0px';
-        container.appendChild(stats.domElement);
+        document.body.appendChild(stats.domElement);
 
         window.addEventListener('resize', onWindowResize, false);
         window.addEventListener('keydown', keydown);
@@ -263,7 +254,6 @@ Ammo().then((Ammo) => {
         const wheelAxleCS = new Ammo.btVector3(-1, 0, 0);
 
         function addWheel(isFront, pos, radius, width, index) {
-
             const wheelInfo = vehicle.addWheel(
                 pos,
                 wheelDirectionCS0,

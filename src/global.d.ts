@@ -15,17 +15,10 @@ interface Three {
 }
 const THREE:Three;
 
-interface Detector_ {
-    webgl: any;
-    addGetWebGLMessage();
-}
-const Detector:Detector_;
-
 class Stats {
     constructor();
     domElement:HTMLElement;
 }
-// const Stats:Stats_;
 
 interface Ammo_ {
     btTransform: any;

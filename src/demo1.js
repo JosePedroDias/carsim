@@ -7,12 +7,18 @@ Ammo().then((Ammo) => {
     const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
 
     // Heightfield parameters
-    const terrainWidthExtents = 100;
-    const terrainDepthExtents = 100;
-    const terrainWidth = 128;
-    const terrainDepth = 128;
-    const terrainMaxHeight = 1;
-    const terrainMinHeight = -1;
+    const terrainRes = 128;
+    const terrainExtent = 100;
+
+    const terrainWidthExtents = terrainExtent;
+    const terrainDepthExtents = terrainExtent;
+    
+    const terrainWidth = terrainRes;
+    const terrainDepth = terrainRes;
+
+    const terrainMaxHeight = 0;
+    const terrainMinHeight = -5;
+
     let terrainMesh;
     let heightData;
     let ammoHeightData;
@@ -38,7 +44,7 @@ Ammo().then((Ammo) => {
     let timeNextSpawn = time + objectTimePeriod;
     const maxNumObjects = 30;
 
-    // Keybord actions
+    // Keyboard actions
     const actions = {};
     const keysActions = {
         "KeyW": 'acceleration',
@@ -48,6 +54,40 @@ Ammo().then((Ammo) => {
     };
 
     // - Functions -
+
+    function readHeightmap(width, depth, minHeight, maxHeight, textureUrl) {
+        return new Promise(resolve => {
+            const img = new Image();
+            img.src = textureUrl;
+            img.addEventListener('load', () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+
+                const size = width * depth;
+                const data = new Float32Array(size);
+                const hRange = maxHeight - minHeight;
+                
+                const id = ctx.getImageData(0, 0, img.width, img.height).data;
+                
+
+                let p = 0;
+                for (let z = 0; z < depth; ++z) {
+                    for (let x = 0; x < width; ++x) {
+                        const px = Math.round(x/width * img.width);
+                        const py = Math.round(z/depth * img.height);
+                        const i = (px + py * img.width)*4;
+                        const v = id[i];// + id[i+1] + id[i+2];
+                        data[p++] = minHeight + hRange * (v/255);
+                    }
+                }
+
+                resolve(data);
+            });
+        });        
+    }
 
     function initGraphics() {
         speedometer = document.getElementById('speedometer');
@@ -64,7 +104,7 @@ Ammo().then((Ammo) => {
 
         // new terrain
         {
-            const geometry = new THREE.PlaneBufferGeometry( 100, 100, terrainWidth - 1, terrainDepth - 1 );
+            const geometry = new THREE.PlaneBufferGeometry(terrainWidthExtents, terrainDepthExtents, terrainWidth - 1, terrainDepth - 1);
             geometry.rotateX( - Math.PI / 2 );
 
             const vertices = geometry.attributes.position.array;
@@ -424,10 +464,10 @@ Ammo().then((Ammo) => {
         syncList.push(sync);
     }
 
-    function generateHeight( width, depth, minHeight, maxHeight) {
+    function generateHeight(width, depth, minHeight, maxHeight) {
         // Generates the height data (a sinus wave)
         const size = width * depth;
-        const data = new Float32Array( size );
+        const data = new Float32Array(size);
 
         const hRange = maxHeight - minHeight;
         const w2 = width / 2;
@@ -435,15 +475,14 @@ Ammo().then((Ammo) => {
         const phaseMult = 12;
 
         let p = 0;
-        for ( let j = 0; j < depth; j ++ ) {
-            for ( let i = 0; i < width; i ++ ) {
+        for (let j = 0; j < depth; ++j) {
+            for (let i = 0; i < width; ++i) {
                 const radius = Math.sqrt(
-                    Math.pow( ( i - w2 ) / w2, 2.0 ) +
-                    Math.pow( ( j - d2 ) / d2, 2.0 ) );
+                    Math.pow( (i - w2) / w2, 2.0) +
+                    Math.pow( (j - d2) / d2, 2.0)
+                );
 
-                const height = ( Math.sin( radius * phaseMult ) + 1 ) * 0.5  * hRange + minHeight;
-                data[ p ] = height;
-                p++;
+                data[p++] = (Math.sin(radius * phaseMult) + 1) * 0.5 * hRange + minHeight;
             }
         }
 
@@ -607,9 +646,14 @@ Ammo().then((Ammo) => {
     }
 
     // - Init -
-    heightData = generateHeight(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight);
-    initGraphics();
-    initPhysics();
-    createObjects();
-    tick();
+    //heightData = generateHeight(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight);
+    const hm = 'displacement-map.jpg';
+    //const hm = 'Heightmap1.png';
+    readHeightmap(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, `./textures/${hm}`).then((heightData_) => {
+        heightData = heightData_;
+        initGraphics();
+        initPhysics();
+        createObjects();
+        tick();
+    });
 });

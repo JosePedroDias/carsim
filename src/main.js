@@ -193,7 +193,7 @@ Ammo().then((Ammo) => {
         // ramp
         const quaternion = new THREE.Quaternion(0, 0, 0, 1);
         quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 18);
-        createBox(physicsWorld, scene, syncList, new THREE.Vector3(0, -2, 0), quaternion, 8, 4, 10, 0);
+        createBox(physicsWorld, scene, syncList, new THREE.Vector3(0, -2, 0), quaternion, 8, 4, 10, 0, 0, true);
 
         // box wall
         createBoxWall(physicsWorld, scene, syncList);

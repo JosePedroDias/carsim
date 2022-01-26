@@ -4,7 +4,7 @@ const materialStatic = new THREE.MeshPhongMaterial({ color: 0x999999 });
 const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
 let TRANSFORM_AUX;
 
-function createBox(physicsWorld, scene, syncList, pos, quat, w, l, h, mass, friction) {
+function createBox(physicsWorld, scene, syncList, pos, quat, w, l, h, mass, friction, receiveShadow) {
     if (!TRANSFORM_AUX) {
         TRANSFORM_AUX = new Ammo.btTransform();
     }
@@ -18,7 +18,7 @@ function createBox(physicsWorld, scene, syncList, pos, quat, w, l, h, mass, fric
 
     const mesh = new THREE.Mesh(shape, material);
     mesh.castShadow = true;
-    //mesh.receiveShadow = true;
+    if (receiveShadow) mesh.receiveShadow = true;
     mesh.position.copy(pos);
     mesh.quaternion.copy(quat);
     scene.add(mesh);

@@ -69,35 +69,9 @@ Ammo().then((Ammo) => {
         controls = new THREE.OrbitControls(camera);
 
 
-        // new terrain
-        {
-            const geometry = new THREE.PlaneBufferGeometry(terrainWidthExtents, terrainDepthExtents, terrainWidth - 1, terrainDepth - 1);
-            geometry.rotateX(- Math.PI / 2);
-
-            const vertices = geometry.attributes.position.array;
-            for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
-                // j + 1 because it is the y component that we modify
-                vertices[j + 1] = heightData[i];
-            }
-            geometry.computeVertexNormals();
-
-            const groundMaterial = new THREE.MeshPhongMaterial({ color: 0xC7C7C7 });
-            terrainMesh = new THREE.Mesh(geometry, groundMaterial);
-            //terrainMesh.castShadow = true;
-            terrainMesh.receiveShadow = true;
-            scene.add(terrainMesh);
-
-            const textureLoader = new THREE.TextureLoader();
-            textureLoader.load('./textures/grid.png', (texture) => {
-                texture.wrapS = THREE.RepeatWrapping;
-                texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.set(terrainWidth - 1, terrainDepth - 1);
-                groundMaterial.map = texture;
-                groundMaterial.needsUpdate = true;
-            });
-        }
-
-
+        // terrain
+        createTerrainMesh(scene, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, heightData);
+        
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
@@ -228,6 +202,8 @@ Ammo().then((Ammo) => {
         if (!friction) friction = 1;
 
         const mesh = new THREE.Mesh(shape, material);
+        mesh.castShadow = true;
+        //mesh.receiveShadow = true;
         mesh.position.copy(pos);
         mesh.quaternion.copy(quat);
         scene.add(mesh);
@@ -268,6 +244,15 @@ Ammo().then((Ammo) => {
         }
     }
 
+    function createBoxWall() {
+        const size = .75;
+        const nw = 8;
+        const nh = 6;
+        for (let j = 0; j < nw; j++)
+            for (let i = 0; i < nh; i++)
+                createBox(new THREE.Vector3(size * j - (size * (nw - 1)) / 2, size * i, 10), ZERO_QUATERNION, size, size, size, 10);
+    }
+
     function createWheelMesh(radius, width) {
         const t = new THREE.CylinderGeometry(radius, radius, width, 24, 1);
         t.rotateZ(Math.PI / 2);
@@ -286,6 +271,33 @@ Ammo().then((Ammo) => {
         //mesh.receiveShadow = true;
         scene.add(mesh);
         return mesh;
+    }
+
+    function createTerrainMesh(scene, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, heightData) {
+        const geometry = new THREE.PlaneBufferGeometry(terrainWidthExtents, terrainDepthExtents, terrainWidth - 1, terrainDepth - 1);
+            geometry.rotateX(- Math.PI / 2);
+
+            const vertices = geometry.attributes.position.array;
+            for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
+                // j + 1 because it is the y component that we modify
+                vertices[j + 1] = heightData[i];
+            }
+            geometry.computeVertexNormals();
+
+            const groundMaterial = new THREE.MeshPhongMaterial({ color: 0xC7C7C7 });
+            terrainMesh = new THREE.Mesh(geometry, groundMaterial);
+            //terrainMesh.castShadow = true;
+            terrainMesh.receiveShadow = true;
+            scene.add(terrainMesh);
+
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load('./textures/grid.png', (texture) => {
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set(terrainWidth - 1, terrainDepth - 1);
+                groundMaterial.map = texture;
+                groundMaterial.needsUpdate = true;
+            });
     }
 
     function createVehicle(pos, quat) {
@@ -611,19 +623,12 @@ Ammo().then((Ammo) => {
         //createBox(new THREE.Vector3(0, -0.5, 0), ZERO_QUATERNION, 75, 1, 75, 0, 2);
 
         // ramp
-        const quaternion = new THREE.Quaternion(0, 0, 0, 1);
-        quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 18);
-        createBox(new THREE.Vector3(0, -1.5, 0), quaternion, 8, 4, 10, 0);
+        //const quaternion = new THREE.Quaternion(0, 0, 0, 1);
+        //quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 18);
+        //createBox(new THREE.Vector3(0, -1.5, 0), quaternion, 8, 4, 10, 0);
 
         // box wall
-        if (false) {
-            const size = .75;
-            const nw = 8;
-            const nh = 6;
-            for (let j = 0; j < nw; j++)
-                for (let i = 0; i < nh; i++)
-                    createBox(new THREE.Vector3(size * j - (size * (nw - 1)) / 2, size * i, 10), ZERO_QUATERNION, size, size, size, 10);
-        }
+        //createBoxWall();
 
         // car
         createVehicle(new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
@@ -633,7 +638,7 @@ Ammo().then((Ammo) => {
     const hm1 = 'displacement-map.jpg';
     const hm2 = 'Heightmap1.png';
     // sinusHeightmap simplexHeightmap readHeightmap
-    readHeightmap(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, `./textures/${hm1}`).then((heightData_) => {
+    readHeightmap(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, `./textures/${hm2}`).then((heightData_) => {
         heightData = heightData_;
         initGraphics();
         initPhysics();

@@ -19,15 +19,13 @@ Ammo().then((Ammo) => {
     const terrainMaxHeight = 0;
     const terrainMinHeight = -5;
 
-    let terrainMesh;
     let heightData;
-    let ammoHeightData;
 
     // Graphics constiables
     let stats, speedometer;
     let camera, controls, scene, renderer;
     const clock = new THREE.Clock();
-    let materialDynamic, materialStatic, materialInteractive;
+    let materialDynamic, materialStatic;
 
     // Physics constiables
     let collisionConfiguration;
@@ -103,7 +101,6 @@ Ammo().then((Ammo) => {
 
         materialDynamic = new THREE.MeshPhongMaterial({ color: 0xfca400 });
         materialStatic = new THREE.MeshPhongMaterial({ color: 0x999999 });
-        materialInteractive = new THREE.MeshPhongMaterial({ color: 0x990000 });
 
         document.body.appendChild(renderer.domElement);
 
@@ -147,7 +144,7 @@ Ammo().then((Ammo) => {
         physicsWorld.setGravity(new Ammo.btVector3(0, -9.82, 0));
 
         // Create the terrain body
-        const groundShape = createTerrainShape(heightData);
+        const groundShape = createTerrainShape(Ammo, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, heightData);
         const groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
         // Shifts the terrain, since bullet re-centers it on its bounding box.
@@ -253,290 +250,6 @@ Ammo().then((Ammo) => {
                 createBox(new THREE.Vector3(size * j - (size * (nw - 1)) / 2, size * i, 10), ZERO_QUATERNION, size, size, size, 10);
     }
 
-    function createWheelMesh(radius, width) {
-        const t = new THREE.CylinderGeometry(radius, radius, width, 24, 1);
-        t.rotateZ(Math.PI / 2);
-        const mesh = new THREE.Mesh(t, materialInteractive);
-        mesh.add(new THREE.Mesh(new THREE.BoxGeometry(width * 1.5, radius * 1.75, radius * .25, 1, 1, 1), materialInteractive));
-        mesh.castShadow = true;
-        //mesh.receiveShadow = true;
-        scene.add(mesh);
-        return mesh;
-    }
-
-    function createChassisMesh(w, l, h) {
-        const shape = new THREE.BoxGeometry(w, l, h, 1, 1, 1);
-        const mesh = new THREE.Mesh(shape, materialInteractive);
-        mesh.castShadow = true;
-        //mesh.receiveShadow = true;
-        scene.add(mesh);
-        return mesh;
-    }
-
-    function createTerrainMesh(scene, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, heightData) {
-        const geometry = new THREE.PlaneBufferGeometry(terrainWidthExtents, terrainDepthExtents, terrainWidth - 1, terrainDepth - 1);
-            geometry.rotateX(- Math.PI / 2);
-
-            const vertices = geometry.attributes.position.array;
-            for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
-                // j + 1 because it is the y component that we modify
-                vertices[j + 1] = heightData[i];
-            }
-            geometry.computeVertexNormals();
-
-            const groundMaterial = new THREE.MeshPhongMaterial({ color: 0xC7C7C7 });
-            terrainMesh = new THREE.Mesh(geometry, groundMaterial);
-            //terrainMesh.castShadow = true;
-            terrainMesh.receiveShadow = true;
-            scene.add(terrainMesh);
-
-            const textureLoader = new THREE.TextureLoader();
-            textureLoader.load('./textures/grid.png', (texture) => {
-                texture.wrapS = THREE.RepeatWrapping;
-                texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.set(terrainWidth - 1, terrainDepth - 1);
-                groundMaterial.map = texture;
-                groundMaterial.needsUpdate = true;
-            });
-    }
-
-    function createVehicle(pos, quat) {
-        // Vehicle contants
-
-        const chassisWidth = 1.8;
-        const chassisHeight = .6;
-        const chassisLength = 4;
-        const massVehicle = 800;
-
-        const wheelAxisPositionBack = -1;
-        const wheelRadiusBack = .4;
-        const wheelWidthBack = .3;
-        const wheelHalfTrackBack = 1;
-        const wheelAxisHeightBack = .3;
-
-        const wheelAxisFrontPosition = 1.7;
-        const wheelHalfTrackFront = 1;
-        const wheelAxisHeightFront = .3;
-        const wheelRadiusFront = .35;
-        const wheelWidthFront = .2;
-
-        const friction = 1000;
-        const suspensionStiffness = 20.0;
-        const suspensionDamping = 2.3;
-        const suspensionCompression = 4.4;
-        const suspensionRestLength = 0.6;
-        const rollInfluence = 0.2;
-
-        const steeringIncrement = .04;
-        const steeringClamp = .5;
-        const maxEngineForce = 2000;
-        const maxBreakingForce = 100;
-
-        // Chassis
-        const geometry = new Ammo.btBoxShape(new Ammo.btVector3(chassisWidth * .5, chassisHeight * .5, chassisLength * .5));
-        const transform = new Ammo.btTransform();
-        transform.setIdentity();
-        transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
-        transform.setRotation(new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w));
-        const motionState = new Ammo.btDefaultMotionState(transform);
-        const localInertia = new Ammo.btVector3(0, 0, 0);
-        geometry.calculateLocalInertia(massVehicle, localInertia);
-        const body = new Ammo.btRigidBody(new Ammo.btRigidBodyConstructionInfo(massVehicle, motionState, geometry, localInertia));
-        body.setActivationState(DISABLE_DEACTIVATION);
-        physicsWorld.addRigidBody(body);
-        const chassisMesh = createChassisMesh(chassisWidth, chassisHeight, chassisLength);
-
-        // Raycast Vehicle
-        let engineForce = 0;
-        let vehicleSteering = 0;
-        let breakingForce = 0;
-        const tuning = new Ammo.btVehicleTuning();
-        const rayCaster = new Ammo.btDefaultVehicleRaycaster(physicsWorld);
-        const vehicle = new Ammo.btRaycastVehicle(tuning, body, rayCaster);
-        vehicle.setCoordinateSystem(0, 1, 2);
-        physicsWorld.addAction(vehicle);
-
-        // Wheels
-        const FRONT_LEFT = 0;
-        const FRONT_RIGHT = 1;
-        const BACK_LEFT = 2;
-        const BACK_RIGHT = 3;
-        const wheelMeshes = [];
-        const wheelDirectionCS0 = new Ammo.btVector3(0, -1, 0);
-        const wheelAxleCS = new Ammo.btVector3(-1, 0, 0);
-
-        function addWheel(isFront, pos, radius, width, index) {
-            const wheelInfo = vehicle.addWheel(
-                pos,
-                wheelDirectionCS0,
-                wheelAxleCS,
-                suspensionRestLength,
-                radius,
-                tuning,
-                isFront);
-
-            wheelInfo.set_m_suspensionStiffness(suspensionStiffness);
-            wheelInfo.set_m_wheelsDampingRelaxation(suspensionDamping);
-            wheelInfo.set_m_wheelsDampingCompression(suspensionCompression);
-            wheelInfo.set_m_frictionSlip(friction);
-            wheelInfo.set_m_rollInfluence(rollInfluence);
-
-            wheelMeshes[index] = createWheelMesh(radius, width);
-        }
-
-        addWheel(true, new Ammo.btVector3(wheelHalfTrackFront, wheelAxisHeightFront, wheelAxisFrontPosition), wheelRadiusFront, wheelWidthFront, FRONT_LEFT);
-        addWheel(true, new Ammo.btVector3(-wheelHalfTrackFront, wheelAxisHeightFront, wheelAxisFrontPosition), wheelRadiusFront, wheelWidthFront, FRONT_RIGHT);
-        addWheel(false, new Ammo.btVector3(-wheelHalfTrackBack, wheelAxisHeightBack, wheelAxisPositionBack), wheelRadiusBack, wheelWidthBack, BACK_LEFT);
-        addWheel(false, new Ammo.btVector3(wheelHalfTrackBack, wheelAxisHeightBack, wheelAxisPositionBack), wheelRadiusBack, wheelWidthBack, BACK_RIGHT);
-
-        // Sync keyboard actions and physics and graphics
-        function sync(dt) {
-            const speed = vehicle.getCurrentSpeedKmHour();
-
-            speedometer.innerHTML = (speed < 0 ? '(R) ' : '') + Math.abs(speed).toFixed(1) + ' km/h';
-
-            breakingForce = 0;
-            engineForce = 0;
-
-            if (actions.recover) {
-                //TODO btRaycastVehicle btRigidBody btMotionState
-                
-                const rb = vehicle.getRigidBody();
-
-                const ms = rb.getMotionState();
-                const wt = new Ammo.btTransform();
-                ms.getWorldTransform(wt);
-                const orig = wt.getOrigin();
-
-                // move closer to origin +6y
-                const vec = new Ammo.btVector3( -orig.x(), 6 -orig.y(), -orig.z() );
-                rb.setLinearVelocity(vec);
-                
-                // TODO rotate it
-            } else {
-                if (actions.acceleration) {
-                    if (speed < -1)
-                        breakingForce = maxBreakingForce;
-                    else engineForce = maxEngineForce;
-                }
-                if (actions.braking) {
-                    if (speed > 1)
-                        breakingForce = maxBreakingForce;
-                    else engineForce = -maxEngineForce / 2;
-                }
-                if (actions.left) {
-                    if (vehicleSteering < steeringClamp)
-                        vehicleSteering += steeringIncrement;
-                }
-                else {
-                    if (actions.right) {
-                        if (vehicleSteering > -steeringClamp)
-                            vehicleSteering -= steeringIncrement;
-                    }
-                    else {
-                        if (vehicleSteering < -steeringIncrement)
-                            vehicleSteering += steeringIncrement;
-                        else {
-                            if (vehicleSteering > steeringIncrement)
-                                vehicleSteering -= steeringIncrement;
-                            else {
-                                vehicleSteering = 0;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // rear wheel drive
-            vehicle.applyEngineForce(engineForce, BACK_LEFT);
-            vehicle.applyEngineForce(engineForce, BACK_RIGHT);
-
-            // all wheels brake
-            vehicle.setBrake(breakingForce / 2, FRONT_LEFT);
-            vehicle.setBrake(breakingForce / 2, FRONT_RIGHT);
-            vehicle.setBrake(breakingForce, BACK_LEFT);
-            vehicle.setBrake(breakingForce, BACK_RIGHT);
-
-            // front wheels steer
-            vehicle.setSteeringValue(vehicleSteering, FRONT_LEFT);
-            vehicle.setSteeringValue(vehicleSteering, FRONT_RIGHT);
-
-            let tm, p, q, i;
-            const n = vehicle.getNumWheels();
-            for (i = 0; i < n; i++) {
-                vehicle.updateWheelTransform(i, true);
-                tm = vehicle.getWheelTransformWS(i);
-                p = tm.getOrigin();
-                q = tm.getRotation();
-                wheelMeshes[i].position.set(p.x(), p.y(), p.z());
-                wheelMeshes[i].quaternion.set(q.x(), q.y(), q.z(), q.w());
-            }
-
-            tm = vehicle.getChassisWorldTransform();
-            p = tm.getOrigin();
-            q = tm.getRotation();
-            chassisMesh.position.set(p.x(), p.y(), p.z());
-            chassisMesh.quaternion.set(q.x(), q.y(), q.z(), q.w());
-        }
-
-        syncList.push(sync);
-    }
-
-    function createTerrainShape(heightData) {
-        // This parameter is not really used, since we are using PHY_FLOAT height data type and hence it is ignored
-        const heightScale = 1;
-
-        // Up axis = 0 for X, 1 for Y, 2 for Z. Normally 1 = Y is used.
-        const upAxis = 1;
-
-        // hdt, height data type. "PHY_FLOAT" is used. Possible values are "PHY_FLOAT", "PHY_UCHAR", "PHY_SHORT"
-        const hdt = "PHY_FLOAT";
-
-        // Set this to your needs (inverts the triangles)
-        const flipQuadEdges = false;
-
-        // Creates height data buffer in Ammo heap
-        ammoHeightData = Ammo._malloc(4 * terrainWidth * terrainDepth);
-
-        // Copy the javascript height data array to the Ammo one.
-        let p = 0;
-        let p2 = 0;
-        for (let j = 0; j < terrainDepth; j++) {
-            for (let i = 0; i < terrainWidth; i++) {
-                // write 32-bit float data to memory
-                Ammo.HEAPF32[ammoHeightData + p2 >> 2] = heightData[p];
-                p++;
-                // 4 bytes/float
-                p2 += 4;
-            }
-        }
-
-        // Creates the heightfield physics shape
-        const heightFieldShape = new Ammo.btHeightfieldTerrainShape(
-            terrainWidth,
-            terrainDepth,
-
-            ammoHeightData,
-
-            heightScale,
-            terrainMinHeight,
-            terrainMaxHeight,
-
-            upAxis,
-            hdt,
-            flipQuadEdges
-        );
-
-        // Set horizontal scale
-        const scaleX = terrainWidthExtents / (terrainWidth - 1);
-        const scaleZ = terrainDepthExtents / (terrainDepth - 1);
-        heightFieldShape.setLocalScaling(new Ammo.btVector3(scaleX, 1, scaleZ));
-
-        heightFieldShape.setMargin(0.05);
-
-        return heightFieldShape;
-    }
-
     function generateObject() {
         const numTypes = 4;
         const objectType = Math.ceil(Math.random() * numTypes);
@@ -631,7 +344,7 @@ Ammo().then((Ammo) => {
         //createBoxWall();
 
         // car
-        createVehicle(new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
+        createVehicle(physicsWorld, scene, syncList, actions, new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
     }
 
     // - Init -

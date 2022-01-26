@@ -54,9 +54,15 @@ This is my nth attempt so don't expect too much...
     npx http-server .
 
 
-https://github.com/image-js/fast-png
 https://github.com/josephg/noisejs
+https://github.com/image-js/fast-png TODO (16 bit heightmap loading)
+https://yoannmoi.net/nipplejs/ (touch virtual joystick)
 
-
+bullet api WIP
 https://github.com/kripken/ammo.js/blob/main/ammo.idl
 https://github.com/giniedp/webidl2ts
+
+
+https://stackoverflow.com/questions/tagged/ammo.js
+https://stackoverflow.com/questions/tagged/bulletphysics
+

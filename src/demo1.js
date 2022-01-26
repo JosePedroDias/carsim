@@ -367,7 +367,20 @@ Ammo().then((Ammo) => {
             engineForce = 0;
 
             if (actions.recover) {
-                vehicle.
+                //TODO btRaycastVehicle btRigidBody btMotionState
+                
+                const rb = vehicle.getRigidBody();
+
+                const ms = rb.getMotionState();
+                const wt = new Ammo.btTransform();
+                ms.getWorldTransform(wt);
+                const orig = wt.getOrigin();
+
+                // move closer to origin +6y
+                const vec = new Ammo.btVector3( -orig.x(), 6 -orig.y(), -orig.z() );
+                rb.setLinearVelocity(vec);
+                
+                // TODO rotate it
             } else {
                 if (actions.acceleration) {
                     if (speed < -1)

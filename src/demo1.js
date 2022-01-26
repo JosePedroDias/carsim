@@ -12,7 +12,7 @@ Ammo().then((Ammo) => {
 
     const terrainWidthExtents = terrainExtent;
     const terrainDepthExtents = terrainExtent;
-    
+
     const terrainWidth = terrainRes;
     const terrainDepth = terrainRes;
 
@@ -45,49 +45,16 @@ Ammo().then((Ammo) => {
     const maxNumObjects = 30;
 
     // Keyboard actions
-    const actions = {};
     const keysActions = {
-        "KeyW": 'acceleration',
-        "KeyS": 'braking',
-        "KeyA": 'left',
-        "KeyD": 'right'
+        KeyW: 'acceleration',
+        KeyS: 'braking',
+        KeyA: 'left',
+        KeyD: 'right',
+        Space: 'recover'
     };
+    const actions = {};
 
     // - Functions -
-
-    function readHeightmap(width, depth, minHeight, maxHeight, textureUrl) {
-        return new Promise(resolve => {
-            const img = new Image();
-            img.src = textureUrl;
-            img.addEventListener('load', () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-
-                const size = width * depth;
-                const data = new Float32Array(size);
-                const hRange = maxHeight - minHeight;
-                
-                const id = ctx.getImageData(0, 0, img.width, img.height).data;
-                
-
-                let p = 0;
-                for (let z = 0; z < depth; ++z) {
-                    for (let x = 0; x < width; ++x) {
-                        const px = Math.round(x/width * img.width);
-                        const py = Math.round(z/depth * img.height);
-                        const i = (px + py * img.width)*4;
-                        const v = id[i];// + id[i+1] + id[i+2];
-                        data[p++] = minHeight + hRange * (v/255);
-                    }
-                }
-
-                resolve(data);
-            });
-        });        
-    }
 
     function initGraphics() {
         speedometer = document.getElementById('speedometer');
@@ -105,29 +72,29 @@ Ammo().then((Ammo) => {
         // new terrain
         {
             const geometry = new THREE.PlaneBufferGeometry(terrainWidthExtents, terrainDepthExtents, terrainWidth - 1, terrainDepth - 1);
-            geometry.rotateX( - Math.PI / 2 );
+            geometry.rotateX(- Math.PI / 2);
 
             const vertices = geometry.attributes.position.array;
-            for ( let i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3 ) {
+            for (let i = 0, j = 0, l = vertices.length; i < l; i++, j += 3) {
                 // j + 1 because it is the y component that we modify
-                vertices[ j + 1 ] = heightData[ i ];
+                vertices[j + 1] = heightData[i];
             }
             geometry.computeVertexNormals();
 
-            const groundMaterial = new THREE.MeshPhongMaterial( { color: 0xC7C7C7 } );
-            terrainMesh = new THREE.Mesh( geometry, groundMaterial );
-            scene.add( terrainMesh );
+            const groundMaterial = new THREE.MeshPhongMaterial({ color: 0xC7C7C7 });
+            terrainMesh = new THREE.Mesh(geometry, groundMaterial);
+            scene.add(terrainMesh);
 
             const textureLoader = new THREE.TextureLoader();
             textureLoader.load('./textures/grid.png', (texture) => {
                 texture.wrapS = THREE.RepeatWrapping;
                 texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.set( terrainWidth - 1, terrainDepth - 1 );
+                texture.repeat.set(terrainWidth - 1, terrainDepth - 1);
                 groundMaterial.map = texture;
                 groundMaterial.needsUpdate = true;
             });
         }
-        
+
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setClearColor(0xbfd1e5);
@@ -147,14 +114,30 @@ Ammo().then((Ammo) => {
 
         document.body.appendChild(renderer.domElement);
 
-        stats = new Stats(); 
+        stats = new Stats();
         stats.domElement.style.position = 'absolute';
         stats.domElement.style.top = '0px';
         document.body.appendChild(stats.domElement);
 
         window.addEventListener('resize', onWindowResize, false);
-        window.addEventListener('keydown', keydown);
-        window.addEventListener('keyup', keyup);
+
+        window.addEventListener('keydown', (ev) => {
+            if (!keysActions[ev.code]) {
+                console.warn(ev.code);
+                return;
+            }
+            actions[keysActions[ev.code]] = true;
+            ev.preventDefault();
+            ev.stopPropagation();
+            return false;
+        });
+        window.addEventListener('keyup', (ev) => {
+            if (!keysActions[ev.code]) return;
+            actions[keysActions[ev.code]] = false;
+            ev.preventDefault();
+            ev.stopPropagation();
+            return false;
+        });
     }
 
     function onWindowResize() {
@@ -174,43 +157,43 @@ Ammo().then((Ammo) => {
         physicsWorld.setGravity(new Ammo.btVector3(0, -9.82, 0));
 
         // Create the terrain body
-        const groundShape = createTerrainShape( heightData );
+        const groundShape = createTerrainShape(heightData);
         const groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
         // Shifts the terrain, since bullet re-centers it on its bounding box.
-        groundTransform.setOrigin( new Ammo.btVector3( 0, ( terrainMaxHeight + terrainMinHeight ) / 2, 0 ) );
+        groundTransform.setOrigin(new Ammo.btVector3(0, (terrainMaxHeight + terrainMinHeight) / 2, 0));
         const groundMass = 0;
-        const groundLocalInertia = new Ammo.btVector3( 0, 0, 0 );
-        const groundMotionState = new Ammo.btDefaultMotionState( groundTransform );
-        const groundBody = new Ammo.btRigidBody( new Ammo.btRigidBodyConstructionInfo( groundMass, groundMotionState, groundShape, groundLocalInertia ) );
-        physicsWorld.addRigidBody( groundBody );
+        const groundLocalInertia = new Ammo.btVector3(0, 0, 0);
+        const groundMotionState = new Ammo.btDefaultMotionState(groundTransform);
+        const groundBody = new Ammo.btRigidBody(new Ammo.btRigidBodyConstructionInfo(groundMass, groundMotionState, groundShape, groundLocalInertia));
+        physicsWorld.addRigidBody(groundBody);
     }
 
     function tick() {
         requestAnimationFrame(tick);
         const dt = clock.getDelta();
 
-        if ( dynamicObjects.length < maxNumObjects && time > timeNextSpawn ) {
+        if (dynamicObjects.length < maxNumObjects && time > timeNextSpawn) {
             generateObject();
             timeNextSpawn = time + objectTimePeriod;
         }
 
         for (let i = 0; i < syncList.length; i++)
             syncList[i](dt);
-        
+
         physicsWorld.stepSimulation(dt, 10);
 
         // Update objects
-        for ( let i = 0, il = dynamicObjects.length; i < il; i++ ) {
-            const objThree = dynamicObjects[ i ];
+        for (let i = 0, il = dynamicObjects.length; i < il; i++) {
+            const objThree = dynamicObjects[i];
             const objPhys = objThree.userData.physicsBody;
             const ms = objPhys.getMotionState();
-            if ( ms ) {
-                ms.getWorldTransform( transformAux1 );
+            if (ms) {
+                ms.getWorldTransform(transformAux1);
                 var p = transformAux1.getOrigin();
                 var q = transformAux1.getRotation();
-                objThree.position.set( p.x(), p.y(), p.z() );
-                objThree.quaternion.set( q.x(), q.y(), q.z(), q.w() );
+                objThree.position.set(p.x(), p.y(), p.z());
+                objThree.quaternion.set(q.x(), q.y(), q.z(), q.w());
             }
         }
 
@@ -218,23 +201,6 @@ Ammo().then((Ammo) => {
         renderer.render(scene, camera);
         time += dt;
         stats.update();
-    }
-
-    function keyup(e) {
-        if (keysActions[e.code]) {
-            actions[keysActions[e.code]] = false;
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    }
-    function keydown(e) {
-        if (keysActions[e.code]) {
-            actions[keysActions[e.code]] = true;
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
     }
 
     function createBox(pos, quat, w, l, h, mass, friction) {
@@ -400,46 +366,53 @@ Ammo().then((Ammo) => {
             breakingForce = 0;
             engineForce = 0;
 
-            if (actions.acceleration) {
-                if (speed < -1)
-                    breakingForce = maxBreakingForce;
-                else engineForce = maxEngineForce;
-            }
-            if (actions.braking) {
-                if (speed > 1)
-                    breakingForce = maxBreakingForce;
-                else engineForce = -maxEngineForce / 2;
-            }
-            if (actions.left) {
-                if (vehicleSteering < steeringClamp)
-                    vehicleSteering += steeringIncrement;
-            }
-            else {
-                if (actions.right) {
-                    if (vehicleSteering > -steeringClamp)
-                        vehicleSteering -= steeringIncrement;
+            if (actions.recover) {
+                vehicle.
+            } else {
+                if (actions.acceleration) {
+                    if (speed < -1)
+                        breakingForce = maxBreakingForce;
+                    else engineForce = maxEngineForce;
+                }
+                if (actions.braking) {
+                    if (speed > 1)
+                        breakingForce = maxBreakingForce;
+                    else engineForce = -maxEngineForce / 2;
+                }
+                if (actions.left) {
+                    if (vehicleSteering < steeringClamp)
+                        vehicleSteering += steeringIncrement;
                 }
                 else {
-                    if (vehicleSteering < -steeringIncrement)
-                        vehicleSteering += steeringIncrement;
-                    else {
-                        if (vehicleSteering > steeringIncrement)
+                    if (actions.right) {
+                        if (vehicleSteering > -steeringClamp)
                             vehicleSteering -= steeringIncrement;
+                    }
+                    else {
+                        if (vehicleSteering < -steeringIncrement)
+                            vehicleSteering += steeringIncrement;
                         else {
-                            vehicleSteering = 0;
+                            if (vehicleSteering > steeringIncrement)
+                                vehicleSteering -= steeringIncrement;
+                            else {
+                                vehicleSteering = 0;
+                            }
                         }
                     }
                 }
             }
 
+            // rear wheel drive
             vehicle.applyEngineForce(engineForce, BACK_LEFT);
             vehicle.applyEngineForce(engineForce, BACK_RIGHT);
 
+            // all wheels brake
             vehicle.setBrake(breakingForce / 2, FRONT_LEFT);
             vehicle.setBrake(breakingForce / 2, FRONT_RIGHT);
             vehicle.setBrake(breakingForce, BACK_LEFT);
             vehicle.setBrake(breakingForce, BACK_RIGHT);
 
+            // front wheels steer
             vehicle.setSteeringValue(vehicleSteering, FRONT_LEFT);
             vehicle.setSteeringValue(vehicleSteering, FRONT_RIGHT);
 
@@ -464,31 +437,6 @@ Ammo().then((Ammo) => {
         syncList.push(sync);
     }
 
-    function generateHeight(width, depth, minHeight, maxHeight) {
-        // Generates the height data (a sinus wave)
-        const size = width * depth;
-        const data = new Float32Array(size);
-
-        const hRange = maxHeight - minHeight;
-        const w2 = width / 2;
-        const d2 = depth / 2;
-        const phaseMult = 12;
-
-        let p = 0;
-        for (let j = 0; j < depth; ++j) {
-            for (let i = 0; i < width; ++i) {
-                const radius = Math.sqrt(
-                    Math.pow( (i - w2) / w2, 2.0) +
-                    Math.pow( (j - d2) / d2, 2.0)
-                );
-
-                data[p++] = (Math.sin(radius * phaseMult) + 1) * 0.5 * hRange + minHeight;
-            }
-        }
-
-        return data;
-    }
-
     function createTerrainShape(heightData) {
         // This parameter is not really used, since we are using PHY_FLOAT height data type and hence it is ignored
         const heightScale = 1;
@@ -503,16 +451,16 @@ Ammo().then((Ammo) => {
         const flipQuadEdges = false;
 
         // Creates height data buffer in Ammo heap
-        ammoHeightData = Ammo._malloc( 4 * terrainWidth * terrainDepth );
+        ammoHeightData = Ammo._malloc(4 * terrainWidth * terrainDepth);
 
         // Copy the javascript height data array to the Ammo one.
         let p = 0;
         let p2 = 0;
-        for ( let j = 0; j < terrainDepth; j ++ ) {
-            for ( let i = 0; i < terrainWidth; i ++ ) {
+        for (let j = 0; j < terrainDepth; j++) {
+            for (let i = 0; i < terrainWidth; i++) {
                 // write 32-bit float data to memory
-                Ammo.HEAPF32[ammoHeightData + p2 >> 2] = heightData[ p ];
-                p ++;
+                Ammo.HEAPF32[ammoHeightData + p2 >> 2] = heightData[p];
+                p++;
                 // 4 bytes/float
                 p2 += 4;
             }
@@ -535,18 +483,18 @@ Ammo().then((Ammo) => {
         );
 
         // Set horizontal scale
-        const scaleX = terrainWidthExtents / ( terrainWidth - 1 );
-        const scaleZ = terrainDepthExtents / ( terrainDepth - 1 );
-        heightFieldShape.setLocalScaling( new Ammo.btVector3( scaleX, 1, scaleZ ) );
+        const scaleX = terrainWidthExtents / (terrainWidth - 1);
+        const scaleZ = terrainDepthExtents / (terrainDepth - 1);
+        heightFieldShape.setLocalScaling(new Ammo.btVector3(scaleX, 1, scaleZ));
 
-        heightFieldShape.setMargin( 0.05 );
+        heightFieldShape.setMargin(0.05);
 
         return heightFieldShape;
     }
 
     function generateObject() {
         const numTypes = 4;
-        const objectType = Math.ceil( Math.random() * numTypes );
+        const objectType = Math.ceil(Math.random() * numTypes);
 
         let threeObject = null;
         let shape = null;
@@ -554,14 +502,14 @@ Ammo().then((Ammo) => {
         const objectSize = 3;
         const margin = 0.05;
 
-        switch ( objectType ) {
+        switch (objectType) {
             case 1:
                 {
                     // Sphere
                     const radius = 1 + Math.random() * objectSize;
-                    threeObject = new THREE.Mesh( new THREE.SphereGeometry( radius, 20, 20 ), createObjectMaterial() );
-                    shape = new Ammo.btSphereShape( radius );
-                    shape.setMargin( margin );
+                    threeObject = new THREE.Mesh(new THREE.SphereGeometry(radius, 20, 20), createObjectMaterial());
+                    shape = new Ammo.btSphereShape(radius);
+                    shape.setMargin(margin);
                     break;
                 }
             case 2:
@@ -570,9 +518,9 @@ Ammo().then((Ammo) => {
                     const sx = 1 + Math.random() * objectSize;
                     const sy = 1 + Math.random() * objectSize;
                     const sz = 1 + Math.random() * objectSize;
-                    threeObject = new THREE.Mesh( new THREE.BoxGeometry( sx, sy, sz, 1, 1, 1 ), createObjectMaterial() );
-                    shape = new Ammo.btBoxShape( new Ammo.btVector3( sx * 0.5, sy * 0.5, sz * 0.5 ) );
-                    shape.setMargin( margin );
+                    threeObject = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz, 1, 1, 1), createObjectMaterial());
+                    shape = new Ammo.btBoxShape(new Ammo.btVector3(sx * 0.5, sy * 0.5, sz * 0.5));
+                    shape.setMargin(margin);
                     break;
                 }
             case 3:
@@ -580,9 +528,9 @@ Ammo().then((Ammo) => {
                     // Cylinder
                     const radius = 1 + Math.random() * objectSize;
                     const height = 1 + Math.random() * objectSize;
-                    threeObject = new THREE.Mesh( new THREE.CylinderGeometry( radius, radius, height, 20, 1 ), createObjectMaterial() );
-                    shape = new Ammo.btCylinderShape( new Ammo.btVector3( radius, height * 0.5, radius ) );
-                    shape.setMargin( margin );
+                    threeObject = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, height, 20, 1), createObjectMaterial());
+                    shape = new Ammo.btCylinderShape(new Ammo.btVector3(radius, height * 0.5, radius));
+                    shape.setMargin(margin);
                     break;
                 }
             default:
@@ -590,36 +538,36 @@ Ammo().then((Ammo) => {
                     // Cone
                     const radius = 1 + Math.random() * objectSize;
                     const height = 2 + Math.random() * objectSize;
-                    threeObject = new THREE.Mesh( new THREE.CylinderGeometry( 0, radius, height, 20, 2 ), createObjectMaterial() );
-                    shape = new Ammo.btConeShape( radius, height );
+                    threeObject = new THREE.Mesh(new THREE.CylinderGeometry(0, radius, height, 20, 2), createObjectMaterial());
+                    shape = new Ammo.btConeShape(radius, height);
                     break;
-                } 
+                }
         }
 
-        threeObject.position.set( ( Math.random() - 0.5 ) * terrainWidth * 0.6, terrainMaxHeight + objectSize + 2, ( Math.random() - 0.5 ) * terrainDepth * 0.6 );
+        threeObject.position.set((Math.random() - 0.5) * terrainWidth * 0.6, terrainMaxHeight + objectSize + 2, (Math.random() - 0.5) * terrainDepth * 0.6);
 
         const mass = objectSize * 5;
-        const localInertia = new Ammo.btVector3( 0, 0, 0 );
-        shape.calculateLocalInertia( mass, localInertia );
+        const localInertia = new Ammo.btVector3(0, 0, 0);
+        shape.calculateLocalInertia(mass, localInertia);
         const transform = new Ammo.btTransform();
         transform.setIdentity();
         const pos = threeObject.position;
-        transform.setOrigin( new Ammo.btVector3( pos.x, pos.y, pos.z ) );
-        const motionState = new Ammo.btDefaultMotionState( transform );
-        const rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, shape, localInertia );
-        const body = new Ammo.btRigidBody( rbInfo );
+        transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+        const motionState = new Ammo.btDefaultMotionState(transform);
+        const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
+        const body = new Ammo.btRigidBody(rbInfo);
 
         threeObject.userData.physicsBody = body;
 
-        scene.add( threeObject );
-        dynamicObjects.push( threeObject );
+        scene.add(threeObject);
+        dynamicObjects.push(threeObject);
 
-        physicsWorld.addRigidBody( body );
+        physicsWorld.addRigidBody(body);
     }
 
     function createObjectMaterial() {
-        var c = Math.floor( Math.random() * ( 1 << 24 ) );
-        return new THREE.MeshPhongMaterial( { color: c } );
+        var c = Math.floor(Math.random() * (1 << 24));
+        return new THREE.MeshPhongMaterial({ color: c });
     }
 
     function createObjects() {
@@ -640,16 +588,16 @@ Ammo().then((Ammo) => {
                 for (let i = 0; i < nh; i++)
                     createBox(new THREE.Vector3(size * j - (size * (nw - 1)) / 2, size * i, 10), ZERO_QUATERNION, size, size, size, 10);
         }
-        
+
         // car
         createVehicle(new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
     }
 
     // - Init -
-    //heightData = generateHeight(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight);
-    const hm = 'displacement-map.jpg';
-    //const hm = 'Heightmap1.png';
-    readHeightmap(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, `./textures/${hm}`).then((heightData_) => {
+    const hm1 = 'displacement-map.jpg';
+    const hm2 = 'Heightmap1.png';
+    // sinusHeightmap simplexHeightmap readHeightmap
+    readHeightmap(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, `./textures/${hm1}`).then((heightData_) => {
         heightData = heightData_;
         initGraphics();
         initPhysics();

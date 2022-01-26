@@ -52,3 +52,11 @@ This is my nth attempt so don't expect too much...
 ## bootstrap
 
     npx http-server .
+
+
+https://github.com/image-js/fast-png
+https://github.com/josephg/noisejs
+
+
+https://github.com/kripken/ammo.js/blob/main/ammo.idl
+https://github.com/giniedp/webidl2ts

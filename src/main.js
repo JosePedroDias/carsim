@@ -83,6 +83,8 @@ Ammo().then((Ammo) => {
 
             const groundMaterial = new THREE.MeshPhongMaterial({ color: 0xC7C7C7 });
             terrainMesh = new THREE.Mesh(geometry, groundMaterial);
+            //terrainMesh.castShadow = true;
+            terrainMesh.receiveShadow = true;
             scene.add(terrainMesh);
 
             const textureLoader = new THREE.TextureLoader();
@@ -97,6 +99,8 @@ Ammo().then((Ammo) => {
 
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
         renderer.setClearColor(0xbfd1e5);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -104,9 +108,24 @@ Ammo().then((Ammo) => {
         const ambientLight = new THREE.AmbientLight(0x404040);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(10, 10, 5);
+        /*const dirLight = new THREE.DirectionalLight(0xffffff, 1, 100);
+        //dirLight.position.set(10, 10, 5);
+        dirLight.position.set(0, 1, 0);
+        dirLight.castShadow = true; // default false
+        scene.add(dirLight);*/
+
+        const dirLight = new THREE.SpotLight(0xffffff);
+        dirLight.position.set(0, 27, 0);
+        dirLight.angle = Math.PI * 0.6;
+        dirLight.castShadow = true; // default false
+        dirLight.shadow.mapSize.width = 2048; // default 512
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.near = 0.5; // default
+        dirLight.shadow.camera.far = 500; // default
         scene.add(dirLight);
+
+        //const dirLightHelper = new THREE.CameraHelper(dirLight.shadow.camera);
+        //scene.add(dirLightHelper);
 
         materialDynamic = new THREE.MeshPhongMaterial({ color: 0xfca400 });
         materialStatic = new THREE.MeshPhongMaterial({ color: 0x999999 });
@@ -119,7 +138,11 @@ Ammo().then((Ammo) => {
         stats.domElement.style.top = '0px';
         document.body.appendChild(stats.domElement);
 
-        window.addEventListener('resize', onWindowResize, false);
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }, false);
 
         window.addEventListener('keydown', (ev) => {
             if (!keysActions[ev.code]) {
@@ -138,13 +161,6 @@ Ammo().then((Ammo) => {
             ev.stopPropagation();
             return false;
         });
-    }
-
-    function onWindowResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-
-        renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
     function initPhysics() {
@@ -257,6 +273,8 @@ Ammo().then((Ammo) => {
         t.rotateZ(Math.PI / 2);
         const mesh = new THREE.Mesh(t, materialInteractive);
         mesh.add(new THREE.Mesh(new THREE.BoxGeometry(width * 1.5, radius * 1.75, radius * .25, 1, 1, 1), materialInteractive));
+        mesh.castShadow = true;
+        //mesh.receiveShadow = true;
         scene.add(mesh);
         return mesh;
     }
@@ -264,6 +282,8 @@ Ammo().then((Ammo) => {
     function createChassisMesh(w, l, h) {
         const shape = new THREE.BoxGeometry(w, l, h, 1, 1, 1);
         const mesh = new THREE.Mesh(shape, materialInteractive);
+        mesh.castShadow = true;
+        //mesh.receiveShadow = true;
         scene.add(mesh);
         return mesh;
     }
@@ -556,6 +576,9 @@ Ammo().then((Ammo) => {
                     break;
                 }
         }
+
+        threeObject.castShadow = true;
+        //threeObject.receiveShadow = true;
 
         threeObject.position.set((Math.random() - 0.5) * terrainWidth * 0.6, terrainMaxHeight + objectSize + 2, (Math.random() - 0.5) * terrainDepth * 0.6);
 

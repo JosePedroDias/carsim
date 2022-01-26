@@ -1,4 +1,7 @@
 interface Three {
+    CameraHelper: any;
+    SpotLight: any;
+    PCFSoftShadowMap: any;
     SphereGeometry: any;
     PlaneBufferGeometry: any;
     TextureLoader: any;

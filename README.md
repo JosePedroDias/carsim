@@ -19,8 +19,8 @@ This is my nth attempt so don't expect too much...
 - physics
     - detect passing through waypoints
 - controls
-    - reposition car action
-    - optional gamepad API
+    - reposition car action (WIP)
+    - optional gamepad and touch input
     - check if it works with wheel
 - camera
     - implement cameras:
@@ -37,10 +37,7 @@ This is my nth attempt so don't expect too much...
     - decals
     - particle generation for dirt and/or smoke
 - track
-    - custom heightmap and texture
     - parametric roads
-- organization
-    - refactor demo to abstract complexity
 
 
 ## reference

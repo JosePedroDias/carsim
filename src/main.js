@@ -20,8 +20,9 @@ Ammo().then((Ammo) => {
     let heightData;
 
     // Graphics constiables
-    let stats, speedometer;
-    let camera, controls, scene, renderer;
+    let stats;
+    let camera, scene, renderer;
+    let chassisMesh;
     const clock = new THREE.Clock();
 
     // Physics constiables
@@ -38,6 +39,12 @@ Ammo().then((Ammo) => {
     const objectTimePeriod = 3;
     let timeNextSpawn = time + objectTimePeriod;
     const maxNumObjects = 30;
+
+    const uy = new THREE.Vector3(0, 1, 0);
+    const dq = new THREE.Quaternion();
+    dq.setFromAxisAngle(uy, Math.PI);
+
+    let speedometer;
 
     // Keyboard actions
     const keysActions = {
@@ -56,11 +63,10 @@ Ammo().then((Ammo) => {
         scene = new THREE.Scene();
 
         camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.2, 2000);
-        camera.position.x = -4.84;
-        camera.position.y = 4.39;
-        camera.position.z = -35.11;
+        camera.position.y = 12;
+        camera.position.z = -30;
         camera.lookAt(new THREE.Vector3(0.33, -0.40, 0.85));
-        controls = new THREE.OrbitControls(camera);
+        //controls = new THREE.OrbitControls(camera);
 
 
         // terrain
@@ -75,12 +81,6 @@ Ammo().then((Ammo) => {
 
         const ambientLight = new THREE.AmbientLight(0x404040);
         scene.add(ambientLight);
-
-        /*const dirLight = new THREE.DirectionalLight(0xffffff, 1, 100);
-        //dirLight.position.set(10, 10, 5);
-        dirLight.position.set(0, 1, 0);
-        dirLight.castShadow = true; // default false
-        scene.add(dirLight);*/
 
         const dirLight = new THREE.SpotLight(0xffffff);
         dirLight.position.set(0, 27, 0);
@@ -184,8 +184,24 @@ Ammo().then((Ammo) => {
             }
         }
 
-        controls.update(dt);
+
+
+        // static cam looking at car
+        camera.lookAt(chassisMesh.position);
+
+        // camera in car
+        /*const cmp = chassisMesh.position.clone();
+        camera.position.x = cmp.x;
+        camera.position.y = cmp.y;
+        camera.position.z = cmp.z;
+
+        const qq = chassisMesh.quaternion.clone().multiply(dq);
+        camera.quaternion.slerp(qq, 0.1);*/
+
+
+
         renderer.render(scene, camera);
+
         time += dt;
         stats.update();
     }
@@ -203,7 +219,10 @@ Ammo().then((Ammo) => {
         createBoxWall(physicsWorld, scene, syncList);
 
         // car
-        createVehicle(physicsWorld, scene, syncList, new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
+        chassisMesh = createVehicle(physicsWorld, scene, syncList, new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
+        
+        // for camera inside the car
+        //chassisMesh.addChild(camera);
     }
 
     // - Init -

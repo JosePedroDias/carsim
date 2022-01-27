@@ -19,14 +19,14 @@ This is my nth attempt so don't expect too much...
 - physics
     - detect passing through waypoints
 - controls
-    - reposition car action (WIP)
-    - optional gamepad and touch input
+    - reposition car action               (WIP)
+    - optional gamepad and touch input      50%
     - check if it works with wheel
 - camera
     - implement cameras:
-        - fixed point - look at car
-        - driver - attached to car
-        - chase cam
+        - fixed point - look at car 100%
+        - driver - attached to car   50%
+        - chase cam                   0%
 - gui
     - basic velocimeter overlay
 - sound generation

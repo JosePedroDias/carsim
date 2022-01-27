@@ -156,6 +156,8 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
     }
 
     syncList.push(sync);
+
+    return chassisMesh;
 }
 
 function createWheelMesh(scene, radius, width) {

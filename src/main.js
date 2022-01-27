@@ -44,6 +44,13 @@ Ammo().then((Ammo) => {
     const dq = new THREE.Quaternion();
     dq.setFromAxisAngle(uy, Math.PI);
 
+    const CM_STATIC = 0;
+    const CM_ONBOARD = 1;
+    const CM_CHASE = 2;
+    
+    const CAMERA_MODE = CM_STATIC;
+    //const CAMERA_MODE = CM_ONBOARD;
+
     let speedometer;
 
     // Keyboard actions
@@ -184,21 +191,28 @@ Ammo().then((Ammo) => {
             }
         }
 
+        if (CAMERA_MODE === CM_STATIC) {
+            // static cam looking at car
+            camera.lookAt(chassisMesh.position);
+        }
+        else if (CAMERA_MODE === CM_ONBOARD) {
+            // camera in car
+            const chassisPos = chassisMesh.position.clone();
+            const chassisDir = chassisMesh.getWorldDirection();
+            chassisDir.multiplyScalar(-2);
+            chassisPos.add(chassisDir);
 
-
-        // static cam looking at car
-        camera.lookAt(chassisMesh.position);
-
-        // camera in car
-        /*const cmp = chassisMesh.position.clone();
-        camera.position.x = cmp.x;
-        camera.position.y = cmp.y;
-        camera.position.z = cmp.z;
-
-        const qq = chassisMesh.quaternion.clone().multiply(dq);
-        camera.quaternion.slerp(qq, 0.1);*/
-
-
+            camera.position.x = chassisPos.x;
+            camera.position.y = chassisPos.y + 1.5;
+            camera.position.z = chassisPos.z;
+            
+            // set camera direction same as chassis direction
+            const qq = chassisMesh.quaternion.clone().multiply(dq);
+            camera.quaternion.slerp(qq, 0.08);
+        }
+        else {
+            // chase
+        }
 
         renderer.render(scene, camera);
 
@@ -220,9 +234,6 @@ Ammo().then((Ammo) => {
 
         // car
         chassisMesh = createVehicle(physicsWorld, scene, syncList, new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
-        
-        // for camera inside the car
-        //chassisMesh.addChild(camera);
     }
 
     // - Init -

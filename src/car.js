@@ -1,39 +1,46 @@
-let materialInteractive = new THREE.MeshPhongMaterial({ color: 0x990000 });
+const materialInteractive = new THREE.MeshPhongMaterial({ color: 0x990000 });
+
+const v = {
+    chassis: {
+        width: 1.8,
+        height: .6,
+        length: 4,
+    },
+    frontWheels: {
+        axisPosition: 1.7,
+        axisHeight: .3,
+        radius: .35,
+        width: .2,
+        halfTrack: 1
+    },
+    backWheels: {
+        axisPosition: -1,
+        axisHeight: .3,
+        radius: .4,
+        width: .3,
+        halfTrack: 1
+    },
+    suspension: {
+        stiffness: 20.0,
+        damping: 2.3,
+        compression: 4.4,
+        restLength: 0.6,
+    },
+    massVehicle: 800,
+    friction: 1000,
+    rollInfluence: 0.2,
+    steeringClamp: .5,
+    maxEngineForce: 2000,
+    maxBreakingForce: 100
+};
 
 function createVehicle(physicsWorld, scene, syncList, pos, quat) {
-    // Vehicle contants
+    // Vehicle constants
 
-    const chassisWidth = 1.8;
-    const chassisHeight = .6;
-    const chassisLength = 4;
-    const massVehicle = 800;
-
-    const wheelAxisPositionBack = -1;
-    const wheelRadiusBack = .4;
-    const wheelWidthBack = .3;
-    const wheelHalfTrackBack = 1;
-    const wheelAxisHeightBack = .3;
-
-    const wheelAxisFrontPosition = 1.7;
-    const wheelHalfTrackFront = 1;
-    const wheelAxisHeightFront = .3;
-    const wheelRadiusFront = .35;
-    const wheelWidthFront = .2;
-
-    const friction = 1000;
-    const suspensionStiffness = 20.0;
-    const suspensionDamping = 2.3;
-    const suspensionCompression = 4.4;
-    const suspensionRestLength = 0.6;
-    const rollInfluence = 0.2;
-
-    const steeringIncrement = .04;
-    const steeringClamp = .5;
-    const maxEngineForce = 2000;
-    const maxBreakingForce = 100;
+    const { chassis, frontWheels, backWheels, suspension, massVehicle, friction, rollInfluence, steeringClamp, maxEngineForce, maxBreakingForce } = v;
 
     // Chassis
-    const geometry = new Ammo.btBoxShape(new Ammo.btVector3(chassisWidth * .5, chassisHeight * .5, chassisLength * .5));
+    const geometry = new Ammo.btBoxShape(new Ammo.btVector3(chassis.width * 0.5, chassis.height * 0.5, chassis.length * 0.5));
     const transform = new Ammo.btTransform();
     transform.setIdentity();
     transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
@@ -44,7 +51,7 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
     const body = new Ammo.btRigidBody(new Ammo.btRigidBodyConstructionInfo(massVehicle, motionState, geometry, localInertia));
     body.setActivationState(DISABLE_DEACTIVATION);
     physicsWorld.addRigidBody(body);
-    const chassisMesh = createChassisMesh(scene, chassisWidth, chassisHeight, chassisLength);
+    const chassisMesh = createChassisMesh(scene, chassis.width, chassis.height, chassis.length);
 
     // Raycast Vehicle
     let engineForce = 0;
@@ -70,24 +77,24 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
             pos,
             wheelDirectionCS0,
             wheelAxleCS,
-            suspensionRestLength,
+            suspension.restLength,
             radius,
             tuning,
             isFront);
 
-        wheelInfo.set_m_suspensionStiffness(suspensionStiffness);
-        wheelInfo.set_m_wheelsDampingRelaxation(suspensionDamping);
-        wheelInfo.set_m_wheelsDampingCompression(suspensionCompression);
+        wheelInfo.set_m_suspensionStiffness(suspension.stiffness);
+        wheelInfo.set_m_wheelsDampingRelaxation(suspension.damping);
+        wheelInfo.set_m_wheelsDampingCompression(suspension.compression);
         wheelInfo.set_m_frictionSlip(friction);
         wheelInfo.set_m_rollInfluence(rollInfluence);
 
         wheelMeshes[index] = createWheelMesh(scene, radius, width);
     }
 
-    addWheel(true, new Ammo.btVector3(wheelHalfTrackFront, wheelAxisHeightFront, wheelAxisFrontPosition), wheelRadiusFront, wheelWidthFront, FRONT_LEFT);
-    addWheel(true, new Ammo.btVector3(-wheelHalfTrackFront, wheelAxisHeightFront, wheelAxisFrontPosition), wheelRadiusFront, wheelWidthFront, FRONT_RIGHT);
-    addWheel(false, new Ammo.btVector3(-wheelHalfTrackBack, wheelAxisHeightBack, wheelAxisPositionBack), wheelRadiusBack, wheelWidthBack, BACK_LEFT);
-    addWheel(false, new Ammo.btVector3(wheelHalfTrackBack, wheelAxisHeightBack, wheelAxisPositionBack), wheelRadiusBack, wheelWidthBack, BACK_RIGHT);
+    addWheel(true,  new Ammo.btVector3( frontWheels.halfTrack, frontWheels.axisHeight, frontWheels.axisPosition), frontWheels.radius, frontWheels.width, FRONT_LEFT);
+    addWheel(true,  new Ammo.btVector3(-frontWheels.halfTrack, frontWheels.axisHeight, frontWheels.axisPosition), frontWheels.radius, frontWheels.width, FRONT_RIGHT);
+    addWheel(false, new Ammo.btVector3( -backWheels.halfTrack,  backWheels.axisHeight,  backWheels.axisPosition),  backWheels.radius,  backWheels.width, BACK_LEFT);
+    addWheel(false, new Ammo.btVector3(  backWheels.halfTrack,  backWheels.axisHeight,  backWheels.axisPosition),  backWheels.radius,  backWheels.width, BACK_RIGHT);
 
     // Sync keyboard actions and physics and graphics
     function sync(dt) {

@@ -97,8 +97,9 @@ function createVehicle(physicsWorld, scene, syncList, actions, pos, quat) {
 
         breakingForce = 0;
         engineForce = 0;
+        vehicleSteering = 0;
 
-        if (actions.recover) {
+        /*if (actions.recover) {
             //TODO btRaycastVehicle btRigidBody btMotionState
             
             const rb = vehicle.getRigidBody();
@@ -144,6 +145,32 @@ function createVehicle(physicsWorld, scene, syncList, actions, pos, quat) {
                         }
                     }
                 }
+            }
+        }*/
+
+        const c = window.controller;
+        if (c.active) {
+            if (c.y < 0) {
+                engineForce = maxEngineForce * -c.y;
+                breakingForce = 0;
+            } else {
+                if (speed > 1) breakingForce = maxBreakingForce * c.y;
+                else           engineForce = maxEngineForce * c.y * -0.5;
+            }
+            vehicleSteering = -c.x * steeringClamp;
+            if (c.b1) {
+                const rb = vehicle.getRigidBody();
+
+                const ms = rb.getMotionState();
+                const wt = new Ammo.btTransform();
+                ms.getWorldTransform(wt);
+                const orig = wt.getOrigin();
+    
+                // move closer to origin +6y
+                const vec = new Ammo.btVector3( -orig.x(), 6 -orig.y(), -orig.z() );
+                rb.setLinearVelocity(vec);
+                
+                // TODO rotate it
             }
         }
 

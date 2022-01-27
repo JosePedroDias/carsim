@@ -41,13 +41,12 @@ Ammo().then((Ammo) => {
 
     // Keyboard actions
     const keysActions = {
-        KeyW: 'acceleration',
-        KeyS: 'braking',
-        KeyA: 'left',
-        KeyD: 'right',
-        Space: 'recover'
+        KeyW:  { k:'y',  on:-1, off:0 },
+        KeyS:  { k:'y',  on: 1, off:0 },
+        KeyA:  { k:'x',  on:-1, off:0 },
+        KeyD:  { k:'x',  on: 1, off:0 },
+        Space: { k:'b1', on: 1, off:0 }
     };
-    const actions = {};
 
     // - Functions -
 
@@ -111,19 +110,24 @@ Ammo().then((Ammo) => {
             renderer.setSize(window.innerWidth, window.innerHeight);
         }, false);
 
+        window.controller.x = 0;
+        window.controller.y = 0;
+        window.controller.b1 = 0;
+
         window.addEventListener('keydown', (ev) => {
-            if (!keysActions[ev.code]) {
-                console.warn(ev.code);
-                return;
-            }
-            actions[keysActions[ev.code]] = true;
+            if (window.controller.active) return;
+            const ka = keysActions[ev.code];
+            if (!ka) return;
+            window.controller[ka.k] = ka.on;
             ev.preventDefault();
             ev.stopPropagation();
             return false;
         });
         window.addEventListener('keyup', (ev) => {
-            if (!keysActions[ev.code]) return;
-            actions[keysActions[ev.code]] = false;
+            if (window.controller.active) return;
+            const ka = keysActions[ev.code];
+            if (!ka) return;
+            window.controller[ka.k] = ka.off;
             ev.preventDefault();
             ev.stopPropagation();
             return false;
@@ -199,7 +203,7 @@ Ammo().then((Ammo) => {
         createBoxWall(physicsWorld, scene, syncList);
 
         // car
-        createVehicle(physicsWorld, scene, syncList, actions, new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
+        createVehicle(physicsWorld, scene, syncList, new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
     }
 
     // - Init -

@@ -1,6 +1,6 @@
 let materialInteractive = new THREE.MeshPhongMaterial({ color: 0x990000 });
 
-function createVehicle(physicsWorld, scene, syncList, actions, pos, quat) {
+function createVehicle(physicsWorld, scene, syncList, pos, quat) {
     // Vehicle contants
 
     const chassisWidth = 1.8;
@@ -99,9 +99,16 @@ function createVehicle(physicsWorld, scene, syncList, actions, pos, quat) {
         engineForce = 0;
         vehicleSteering = 0;
 
-        /*if (actions.recover) {
-            //TODO btRaycastVehicle btRigidBody btMotionState
-            
+        const c = window.controller;
+        if (c.y < 0) {
+            engineForce = maxEngineForce * -c.y;
+            breakingForce = 0;
+        } else {
+            if (speed > 1) breakingForce = maxBreakingForce * c.y;
+            else           engineForce = maxEngineForce * c.y * -0.5;
+        }
+        vehicleSteering = -c.x * steeringClamp;
+        if (c.b1) {
             const rb = vehicle.getRigidBody();
 
             const ms = rb.getMotionState();
@@ -114,64 +121,6 @@ function createVehicle(physicsWorld, scene, syncList, actions, pos, quat) {
             rb.setLinearVelocity(vec);
             
             // TODO rotate it
-        } else {
-            if (actions.acceleration) {
-                if (speed < -1)
-                    breakingForce = maxBreakingForce;
-                else engineForce = maxEngineForce;
-            }
-            if (actions.braking) {
-                if (speed > 1)
-                    breakingForce = maxBreakingForce;
-                else engineForce = -maxEngineForce / 2;
-            }
-            if (actions.left) {
-                if (vehicleSteering < steeringClamp)
-                    vehicleSteering += steeringIncrement;
-            }
-            else {
-                if (actions.right) {
-                    if (vehicleSteering > -steeringClamp)
-                        vehicleSteering -= steeringIncrement;
-                }
-                else {
-                    if (vehicleSteering < -steeringIncrement)
-                        vehicleSteering += steeringIncrement;
-                    else {
-                        if (vehicleSteering > steeringIncrement)
-                            vehicleSteering -= steeringIncrement;
-                        else {
-                            vehicleSteering = 0;
-                        }
-                    }
-                }
-            }
-        }*/
-
-        const c = window.controller;
-        if (c.active) {
-            if (c.y < 0) {
-                engineForce = maxEngineForce * -c.y;
-                breakingForce = 0;
-            } else {
-                if (speed > 1) breakingForce = maxBreakingForce * c.y;
-                else           engineForce = maxEngineForce * c.y * -0.5;
-            }
-            vehicleSteering = -c.x * steeringClamp;
-            if (c.b1) {
-                const rb = vehicle.getRigidBody();
-
-                const ms = rb.getMotionState();
-                const wt = new Ammo.btTransform();
-                ms.getWorldTransform(wt);
-                const orig = wt.getOrigin();
-    
-                // move closer to origin +6y
-                const vec = new Ammo.btVector3( -orig.x(), 6 -orig.y(), -orig.z() );
-                rb.setLinearVelocity(vec);
-                
-                // TODO rotate it
-            }
         }
 
         // rear wheel drive

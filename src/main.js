@@ -73,7 +73,6 @@ Ammo().then((Ammo) => {
         camera.position.y = 12;
         camera.position.z = -30;
         camera.lookAt(new THREE.Vector3(0.33, -0.40, 0.85));
-        //controls = new THREE.OrbitControls(camera);
 
 
         // terrain

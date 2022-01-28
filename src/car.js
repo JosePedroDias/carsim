@@ -10,15 +10,15 @@ const v = {
         axisPosition: 1.5,
         axisHeight: 0.2,
         radius: 0.45,
-        width: 0.25,
-        halfTrack: 1
+        width: 0.3,
+        halfTrack: -0.9
     },
     backWheels: {
         axisPosition: -1,
         axisHeight: 0.2-0.1,
         radius: 0.45,
-        width: 0.25,
-        halfTrack: 1
+        width: 0.3,
+        halfTrack: -0.9
     },
     suspension: {
         stiffness: 20.0,
@@ -26,9 +26,17 @@ const v = {
         compression: 4.4,
         restLength: 0.6,
     },
-    massVehicle: 950,
+    braking: {
+        front: 1,
+        back: 0.75
+    },
+    drive: {
+        front: 1,
+        back: 1
+    },
+    massVehicle: 1000,
     friction: 1000,
-    rollInfluence: 0.2,
+    rollInfluence: 0.1,
     steeringClamp: 0.5,
     maxEngineForce: 3000,
     maxBreakingForce: 120
@@ -37,7 +45,7 @@ const v = {
 function createVehicle(physicsWorld, scene, syncList, pos, quat) {
     // Vehicle constants
 
-    const { chassis, frontWheels, backWheels, suspension, massVehicle, friction, rollInfluence, steeringClamp, maxEngineForce, maxBreakingForce } = v;
+    const { chassis, frontWheels, backWheels, suspension, massVehicle, friction, braking, drive, rollInfluence, steeringClamp, maxEngineForce, maxBreakingForce } = v;
 
     // Chassis
     const geometry = new Ammo.btBoxShape(new Ammo.btVector3(chassis.width * 0.5, chassis.height * 0.5, chassis.length * 0.5));
@@ -130,17 +138,19 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
             // TODO rotate it
         }
 
-        // rear wheel drive
-        vehicle.applyEngineForce(engineForce, BACK_LEFT);
-        vehicle.applyEngineForce(engineForce, BACK_RIGHT);
+        // wheel drive
+        drive.front && vehicle.applyEngineForce(engineForce * drive.front, FRONT_LEFT);
+        drive.front && vehicle.applyEngineForce(engineForce * drive.front, FRONT_RIGHT);
+        drive.back  && vehicle.applyEngineForce(engineForce * drive.back,  BACK_LEFT);
+        drive.back  && vehicle.applyEngineForce(engineForce * drive.back,  BACK_RIGHT);
 
-        // all wheels brake
-        vehicle.setBrake(breakingForce / 2, FRONT_LEFT);
-        vehicle.setBrake(breakingForce / 2, FRONT_RIGHT);
-        vehicle.setBrake(breakingForce, BACK_LEFT);
-        vehicle.setBrake(breakingForce, BACK_RIGHT);
+        // wheel brake
+        braking.front && vehicle.setBrake(breakingForce * braking.front, FRONT_LEFT);
+        braking.front && vehicle.setBrake(breakingForce * braking.front, FRONT_RIGHT);
+        braking.back  && vehicle.setBrake(breakingForce * braking.back,  BACK_LEFT);
+        braking.back  && vehicle.setBrake(breakingForce * braking.back,  BACK_RIGHT);
 
-        // front wheels steer
+        // wheel steering
         vehicle.setSteeringValue(vehicleSteering, FRONT_LEFT);
         vehicle.setSteeringValue(vehicleSteering, FRONT_RIGHT);
 

@@ -15,3 +15,18 @@ body {
     bottom: 0px;
     padding: 5px;
 }
+
+svg {
+    pointer-events: none;
+    position: absolute;
+}
+
+#cu-gamepad {
+    left: 0;
+    bottom: 25px;
+}
+
+#cu-car {
+    left: 0;
+    top: 50px;
+}

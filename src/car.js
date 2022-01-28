@@ -115,6 +115,13 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
         vehicleSteering = 0;
 
         const c = window.controller;
+
+        const cuC = window.cuC;
+        cuC.steer(c.x);
+        cuC.accel(c.y < 0 ? -c.y : -c.y*0.5);
+        cuC.brake(speed > 1 ? c.y : 0);
+        cuC.b1(c.b1);
+
         if (c.y < 0) {
             engineForce = maxEngineForce * -c.y;
             breakingForce = 0;

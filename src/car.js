@@ -3,21 +3,21 @@ const materialInteractive = new THREE.MeshPhongMaterial({ color: 0x990000 });
 const v = {
     chassis: {
         width: 1.8,
-        height: .6,
-        length: 4,
+        height: 0.8,
+        length: 3.6,
     },
     frontWheels: {
-        axisPosition: 1.7,
-        axisHeight: .3,
-        radius: .35,
-        width: .2,
+        axisPosition: 1.5,
+        axisHeight: 0.2,
+        radius: 0.45,
+        width: 0.25,
         halfTrack: 1
     },
     backWheels: {
         axisPosition: -1,
-        axisHeight: .3,
-        radius: .4,
-        width: .3,
+        axisHeight: 0.2-0.1,
+        radius: 0.45,
+        width: 0.25,
         halfTrack: 1
     },
     suspension: {
@@ -26,12 +26,12 @@ const v = {
         compression: 4.4,
         restLength: 0.6,
     },
-    massVehicle: 800,
+    massVehicle: 950,
     friction: 1000,
     rollInfluence: 0.2,
-    steeringClamp: .5,
-    maxEngineForce: 2000,
-    maxBreakingForce: 100
+    steeringClamp: 0.5,
+    maxEngineForce: 3000,
+    maxBreakingForce: 120
 };
 
 function createVehicle(physicsWorld, scene, syncList, pos, quat) {

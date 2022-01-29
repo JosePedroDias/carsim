@@ -63,6 +63,9 @@ declare module THREE {
     class SphereGeometry extends Geometry {
         constructor(a:number, b:number, c:number);
     }
+    class SphereBufferGeometry extends Geometry {
+        constructor(radius:number);
+    }
     class PlaneBufferGeometry extends Geometry {
         constructor(a:number, b:number, c:number, d:number);
     }
@@ -94,6 +97,15 @@ declare module THREE {
     class PerspectiveCamera extends Camera {
         constructor(fov:number, ar:number, near?:number, far?:number);
     }
+
+    class Raycaster {
+        ray: {
+            direction: Vector3,
+            origin: Vector3
+        }
+        setFromCamera(a:Vector2, b:Camera);
+    }
+
     class Quaternion {
         constructor();
         constructor(x:number, y:number,z:number, w?:number);
@@ -111,6 +123,16 @@ declare module THREE {
     class TextureLoader {
         load(url:string, cb:Function);
     }
+    class Vector2 {
+        constructor();
+        constructor(x:number, y:number);
+        x: number;
+        y: number;
+        set: (x?:number, y?:number) => void;
+        add(v:Vector2);
+        multiplyScalar(n:number);
+        copy(v:Vector2);
+    }
     class Vector3 {
         constructor();
         constructor(x:number, y:number, z:number);
@@ -118,12 +140,15 @@ declare module THREE {
         y: number;
         z: number;
         set: (x?:number, y?:number, z?:number) => void;
+        add(v:Vector3);
         multiplyScalar(n:number);
         copy(v:Vector3);
     }
     class WebGLRenderer {
-        domElement:any;
         constructor(o:Object);
+        domElement:any;
+        gammaInput:boolean;
+        gammaOutput:boolean;
         shadowMap:any;
         setSize(w:number, h:number);
         setPixelRatio(rez:number);

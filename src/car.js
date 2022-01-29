@@ -1,6 +1,7 @@
 // @ts-check
 
-const materialInteractive = new THREE.MeshPhongMaterial({ color: 0x990000 });
+const chassisMat = new THREE.MeshPhongMaterial({ color: 0x550202 });
+const wheelsMat = new THREE.MeshPhongMaterial({ color: 0x050505 });
 
 const v = {
     chassis: {
@@ -147,6 +148,7 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
         }
         vehicleSteering = -c.x * steeringClamp;
         if (c.b1) {
+            // recover!
             const rb = vehicle.getRigidBody();
 
             const ms = rb.getMotionState();
@@ -154,11 +156,13 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
             ms.getWorldTransform(wt);
             const orig = wt.getOrigin();
 
-            // move closer to origin +6y
-            const vec = new Ammo.btVector3( -orig.x(), 6 -orig.y(), -orig.z() );
+            // raise the car a bit
+            const vec = new Ammo.btVector3(0, 4, 0);
             rb.setLinearVelocity(vec);
             
-            // TODO rotate it
+            // slowly roll it
+            const av = new Ammo.btVector3(1, 0, 0);
+            rb.setAngularVelocity(av);
         }
         if (c.b2) {
             window.nextCamera();
@@ -206,8 +210,8 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
 function createWheelMesh(scene, radius, width) {
     const t = new THREE.CylinderGeometry(radius, radius, width, 24, 1);
     t.rotateZ(Math.PI / 2);
-    const mesh = new THREE.Mesh(t, materialInteractive);
-    mesh.add(new THREE.Mesh(new THREE.BoxGeometry(width * 1.5, radius * 1.75, radius * .25, 1, 1, 1), materialInteractive));
+    const mesh = new THREE.Mesh(t, wheelsMat);
+    mesh.add(new THREE.Mesh(new THREE.BoxGeometry(width * 1.5, radius * 1.75, radius * .25, 1, 1, 1), wheelsMat));
     mesh.castShadow = true;
     //mesh.receiveShadow = true;
     scene.add(mesh);
@@ -216,7 +220,7 @@ function createWheelMesh(scene, radius, width) {
 
 function createChassisMesh(scene, w, l, h) {
     const shape = new THREE.BoxGeometry(w, l, h, 1, 1, 1);
-    const mesh = new THREE.Mesh(shape, materialInteractive);
+    const mesh = new THREE.Mesh(shape, chassisMat);
     mesh.castShadow = true;
     //mesh.receiveShadow = true;
     scene.add(mesh);

@@ -4,7 +4,10 @@ This is me playing with ammo.js and threejs to attempt a KISS 3D physics car sim
 This is my nth attempt so don't expect too much...
 
 
-## Tentative plan to rule the world 
+## Tentative plan to rule the world
+- intro
+    - [ ] load/save params to localStorage, reloading page (toggle shadows, map, quality, etc.)
+    - [ ] present dialog with basic intro text
 - car
     - [ ] play with car rig (dimensions, materials and params)
     - [ ] car mods and visuals (rally, offroad, bus)
@@ -56,9 +59,8 @@ the edge of rolling over. It's interesting that I started this experiment with f
 Started from ammo.js examples, heavily refactoring them. Then started to tackle small objectives, trying to keep the game fun and stable.
 It's coming along great!
 
-One thing that is helping a lot is using this lazy TypeScript inference with `// @ts-check`.
-I eventually write down an approximation of what I consume, which helps me make less errors and since BulletPhysics
-is huge once I type some of it I guess it will be a breeze to work with.
+One thing that is helping a lot is using this lazy TypeScript inference with `// @ts-check`. (one has to open all relevant js and d.ts files and vscode does the rest).
+Imported/hacked some typings in `global.d.ts`.
 
 
 ### controller input

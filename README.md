@@ -11,6 +11,7 @@ This is my nth attempt so don't expect too much...
 - car
     - [ ] play with car rig (dimensions, materials and params)
     - [ ] car mods and visuals (rally, offroad, bus)
+    - [ ] EVENTUALLY gears/rpms and their overlays (more relevant once engine sounds exist)
 - physics
     - [ ] detect passing through waypoints
 - controls

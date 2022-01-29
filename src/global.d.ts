@@ -13,7 +13,10 @@ interface Window {
         b1(v:boolean);
         b2(v:boolean);
     }
-    nextCamera: Function
+    nextCamera: Function,
+    carHud: {
+        changeSpeed(v:number);
+    }
 }
 
 interface Element {

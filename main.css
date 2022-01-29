@@ -1,20 +1,9 @@
 body {
-    color: #61443e;
-    font-family:Monospace;
-    font-size:13px;
-    text-align:center;
-    background-color: #bfd1e5;
-    margin: 0px;
+    font-family: monospace;
+    font-size: 13px;
+    margin: 0;
     overflow: hidden;
     touch-action: none;
-}
-
-#speedometer {
-    color: #ffffff;
-    background-color: #990000;
-    position: absolute;
-    bottom: 0px;
-    padding: 5px;
 }
 
 svg {
@@ -30,4 +19,10 @@ svg {
 #cu-car {
     left: 0;
     top: 50px;
+}
+
+#car-hud {
+    bottom: 0;
+    left: 50%;
+    margin-left: -70px;
 }

@@ -65,8 +65,6 @@ Ammo().then(
     const dq = new THREE.Quaternion();
     dq.setFromAxisAngle(uy, Math.PI);
 
-    let speedometer;
-
     // Keyboard actions
     let lastNextCameraT = 0;
     const nextCameraIgnoreDeltaT = 500;
@@ -103,8 +101,6 @@ Ammo().then(
     // - Functions -
 
     function initGraphics() {
-        speedometer = document.getElementById('speedometer');
-
         scene = new THREE.Scene();
 
         camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.2, 2000);

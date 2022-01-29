@@ -59,6 +59,7 @@ interface Window {
         b1: boolean,
         b2: boolean
     }
+    nextCamera: Function
 }
 
 const Ammo:() => Promise<Ammo_>;

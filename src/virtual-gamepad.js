@@ -1,4 +1,5 @@
 // @ts-check
+const ACCEPT_MOUSE = false; // (good for debugging this in a desktop browser)
 
 function virtualGamepad(padConfigs, mouseSupport) {
     const xmlns = 'http://www.w3.org/2000/svg';
@@ -23,8 +24,10 @@ function virtualGamepad(padConfigs, mouseSupport) {
             C = document.createElementNS(xmlns, 'circle');
             C.setAttribute('cx', cx);
             C.setAttribute('cy', cx);
+            // @ts-ignore
             C.setAttribute('r', dim / 2);
             C.setAttribute('fill', color);
+            // @ts-ignore
             C.setAttribute('opacity', 0.4);
             svg.appendChild(C);
 
@@ -32,16 +35,19 @@ function virtualGamepad(padConfigs, mouseSupport) {
             c = document.createElementNS(xmlns, 'circle');
             c.setAttribute('cx', cx);
             c.setAttribute('cy', cx);
+            // @ts-ignore
             c.setAttribute('r', r);
             c.setAttribute('fill', color);
+            // @ts-ignore
             c.setAttribute('opacity', 0.4);
             svg.appendChild(c);
 
             const t = document.createElementNS(xmlns, 'text');
             t.setAttribute('x', cx);
             t.setAttribute('y', cx);
-            t.setAttribute('text-anchor', 'middle');        // X
+            t.setAttribute('text-anchor', 'middle');       // X
             t.setAttribute('dominant-baseline', 'middle'); // Y
+            // @ts-ignore
             t.setAttribute('font-size', r);
             t.setAttribute('fill', 'white');
             t.appendChild(document.createTextNode(label));
@@ -101,6 +107,7 @@ function virtualGamepad(padConfigs, mouseSupport) {
                 const tmp = fixes.start ? [area.x[2] * w, area.y[2] * h] : [x, y];
                 downAt = tmp;
                 lastAt = tmp;
+                // @ts-ignore
                 g.moveBig(tmp);
                 g.moveSmall([0, 0]);
                 g.setOpacity(1);
@@ -135,6 +142,7 @@ function virtualGamepad(padConfigs, mouseSupport) {
                     }
                     lastDelta = [dx, dy];
                 }
+                // @ts-ignore
                 g.moveSmall(lastDelta);
             }
         }
@@ -183,7 +191,7 @@ function virtualGamepad(padConfigs, mouseSupport) {
         pads.forEach(p => p.updateEvent(pos, isDown, isUp));
     }
 
-    function handleTouch(ev) {
+    function handleEvent(ev) {
         ev.preventDefault();
         ev.stopPropagation();
 
@@ -208,17 +216,16 @@ function virtualGamepad(padConfigs, mouseSupport) {
     if (mouseSupport) {
         eventNames = eventNames.concat(['mousedown', 'mousemove', 'mouseup']);
     }
-
     for (let evName of eventNames) {
-        window.addEventListener(evName, handleTouch);
+        window.addEventListener(evName, handleEvent);
     }
 
     return pads;
 }
 
 {
-    if ('ontouchstart' in window) {
-        const [pSteer, pAccelBrake, pRecover] = virtualGamepad([
+    if ('ontouchstart' in window || ACCEPT_MOUSE) {
+        const [pSteer, pAccelBrake, pRecover, pCamera] = virtualGamepad([
             {
                 label: 'steer',
                 color: 'cyan',
@@ -236,11 +243,18 @@ function virtualGamepad(padConfigs, mouseSupport) {
             {
                 label: 'recover',
                 color: 'magenta',
-                area: { x: [0, 1], y: [0, 0.5] },
+                area: { x: [0, 0.5], y: [0, 0.5] },
+                deadZone: 0,
+                fixes: { x: true, y: true }
+            },
+            {
+                label: 'camera',
+                color: 'blue',
+                area: { x: [0.5, 1], y: [0, 0.5] },
                 deadZone: 0,
                 fixes: { x: true, y: true }
             }
-        ]);
+        ], ACCEPT_MOUSE);
 
         // const clamp = (v, m, M) => v < m ? m : v > M ? M : v;
 
@@ -249,6 +263,7 @@ function virtualGamepad(padConfigs, mouseSupport) {
             const dS = pSteer.getData();
             const dAB = pAccelBrake.getData();
             const dR = pRecover.getData();
+            const dC = pCamera.getData();
 
             if (!started) {
                 if (dS.isDown || dAB.isDown || dR.isDown) started = true;
@@ -264,6 +279,7 @@ function virtualGamepad(padConfigs, mouseSupport) {
             window.controller.y = accBr; // clamp(accBr, -1, 1);
 
             window.controller.b1 = dR.isDown;
+            window.controller.b2 = dC.isDown;
         }, 1000 /20);
     }
 }

@@ -49,6 +49,25 @@ This is my nth attempt so don't expect too much...
     npx http-server .
 
 
+## Strategy so far
+
+What triggered this was watching a twitch stream of some crazy Euro Truck Simulator 2 custom map (possibly promods?) where the bus was in
+the edge of rolling over. It's interesting that I started this experiment with fun in mind, assuming I would plateau super fast and drop it.
+Started from ammo.js examples, heavily refactoring them. Then started to tackle small objectives, trying to keep the game fun and stable.
+It's coming along great!
+
+One thing that is helping a lot is using this lazy TypeScript inference with `// @ts-check`.
+I eventually write down an approximation of what I consume, which helps me make less errors and since BulletPhysics
+is huge once I type some of it I guess it will be a breeze to work with.
+
+
+### controller input
+
+One abstraction that has been paying off is abstracting input as a generic structure of axis and buttons (exposed in window.controller).
+Both keyboard, gamepad and virtual gamepad (via touch events) interfaces are updating this structure.
+TODO: Manage button up/down immediate events being polled in a simple manner.
+
+
 ## Stuff to check out:
 
 - noise generation

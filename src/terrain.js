@@ -107,10 +107,10 @@ function simplexHeightmap(width, depth, minHeight, maxHeight) {
     });
 }
 
-function readHeightmap(width, depth, minHeight, maxHeight, textureUrl) {
+function readHeightmap(width, depth, minHeight, maxHeight, heightmapUrl) {
     return new Promise(resolve => {
         const img = new Image();
-        img.src = textureUrl;
+        img.src = heightmapUrl;
         img.addEventListener('load', () => {
             const canvas = document.createElement('canvas');
             canvas.width = img.width;
@@ -140,7 +140,7 @@ function readHeightmap(width, depth, minHeight, maxHeight, textureUrl) {
     });
 }
 
-function createTerrainMesh(scene, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, heightData) {
+function createTerrainMesh(scene, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, heightData, textureUrl, repeat) {
     const geometry = new THREE.PlaneBufferGeometry(terrainWidthExtents, terrainDepthExtents, terrainWidth - 1, terrainDepth - 1);
         geometry.rotateX(- Math.PI / 2);
 
@@ -158,10 +158,12 @@ function createTerrainMesh(scene, terrainWidthExtents, terrainDepthExtents, terr
         scene.add(terrainMesh);
 
         const textureLoader = new THREE.TextureLoader();
-        textureLoader.load('./textures/grid.png', (texture) => {
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(terrainWidth - 1, terrainDepth - 1);
+        textureLoader.load(`./textures/${textureUrl}`, (texture) => {
+            if (repeat) {
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set(terrainWidth - 1, terrainDepth - 1);
+            }
             groundMaterial.map = texture;
             groundMaterial.needsUpdate = true;
         });

@@ -1,21 +1,41 @@
 // @ts-check
 
+//const hm = 'displacement-map.jpg';
+//const hm = 'Heightmap1.png';
+const hm = '1h2.png';
+const tm = '1t.png';
+const gridTm = 'grid.png';
+const SHOW_GRID = false;
+const WITH_SHADOWS = false;
+
+const TERRAIN_RESOLUTION = 128*2; // MESH RESOLUTION
+const TERRAIN_EXTENT = 100*2; // ACTUAL DIMS
+const TERRAIN_DELTA_HEIGHT = 5; // ACTUAL DIMS
+
+const CAR_POSITION = [0, 4, -31.5];
+const STATIC_CAM_POSITION = [0, 12, -50];
+
+const CM_STATIC = 0;
+const CM_ONBOARD = 1;
+const CM_CHASE = 2;
+
+const CAMERA_MODE = CM_STATIC;
+//const CAMERA_MODE = CM_ONBOARD;
+
 Ammo().then((Ammo) => {
     // - Global constiables -
     const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
 
     // Heightfield parameters
-    const terrainRes = 128;
-    const terrainExtent = 100;
 
-    const terrainWidthExtents = terrainExtent;
-    const terrainDepthExtents = terrainExtent;
+    const terrainWidthExtents = TERRAIN_EXTENT;
+    const terrainDepthExtents = TERRAIN_EXTENT;
 
-    const terrainWidth = terrainRes;
-    const terrainDepth = terrainRes;
+    const terrainWidth = TERRAIN_RESOLUTION;
+    const terrainDepth = TERRAIN_RESOLUTION;
 
     const terrainMaxHeight = 0;
-    const terrainMinHeight = -5;
+    const terrainMinHeight = -TERRAIN_DELTA_HEIGHT;
 
     let heightData;
 
@@ -44,13 +64,6 @@ Ammo().then((Ammo) => {
     const dq = new THREE.Quaternion();
     dq.setFromAxisAngle(uy, Math.PI);
 
-    const CM_STATIC = 0;
-    const CM_ONBOARD = 1;
-    const CM_CHASE = 2;
-    
-    const CAMERA_MODE = CM_STATIC;
-    //const CAMERA_MODE = CM_ONBOARD;
-
     let speedometer;
 
     // Keyboard actions
@@ -70,16 +83,17 @@ Ammo().then((Ammo) => {
         scene = new THREE.Scene();
 
         camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.2, 2000);
-        camera.position.y = 12;
-        camera.position.z = -30;
-        camera.lookAt(new THREE.Vector3(0.33, -0.40, 0.85));
-
+        camera.position.x = STATIC_CAM_POSITION[0];
+        camera.position.y = STATIC_CAM_POSITION[1];
+        camera.position.z = STATIC_CAM_POSITION[2];
 
         // terrain
-        createTerrainMesh(scene, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, heightData);
+        createTerrainMesh(scene, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, heightData, SHOW_GRID ? gridTm : tm, SHOW_GRID);
         
         renderer = new THREE.WebGLRenderer({ antialias: true });
-        //renderer.shadowMap.enabled = true;
+        if (WITH_SHADOWS) {
+            renderer.shadowMap.enabled = true;
+        }
         renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
         renderer.setClearColor(0xbfd1e5);
 
@@ -120,10 +134,6 @@ Ammo().then((Ammo) => {
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }, false);
-
-        window.controller.x = 0;
-        window.controller.y = 0;
-        window.controller.b1 = 0;
 
         window.addEventListener('keydown', (ev) => {
             if (window.controller.active) return;
@@ -229,22 +239,20 @@ Ammo().then((Ammo) => {
         //createBox(physicsWorld, scene, syncList, new THREE.Vector3(0, -0.5, 0), ZERO_QUATERNION, 75, 1, 75, 0, 2);
 
         // ramp
-        const quaternion = new THREE.Quaternion(0, 0, 0, 1);
+        /* const quaternion = new THREE.Quaternion(0, 0, 0, 1);
         quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 18);
-        createBox(physicsWorld, scene, syncList, new THREE.Vector3(0, -2, 0), quaternion, 8, 4, 10, 0, 0, true);
+        createBox(physicsWorld, scene, syncList, new THREE.Vector3(0, -2, 0), quaternion, 8, 4, 10, 0, 0, true); */
 
         // box wall
-        createBoxWall(physicsWorld, scene, syncList);
+        //createBoxWall(physicsWorld, scene, syncList);
 
         // car
-        chassisMesh = createVehicle(physicsWorld, scene, syncList, new THREE.Vector3(0, 4, -20), ZERO_QUATERNION);
+        chassisMesh = createVehicle(physicsWorld, scene, syncList, new THREE.Vector3(...CAR_POSITION), ZERO_QUATERNION);
     }
 
     // - Init -
-    const hm1 = 'displacement-map.jpg';
-    const hm2 = 'Heightmap1.png';
     // sinusHeightmap simplexHeightmap readHeightmap
-    readHeightmap(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, `./textures/${hm1}`).then((heightData_) => {
+    readHeightmap(terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, `./textures/${hm}`).then((heightData_) => {
         heightData = heightData_;
         initGraphics();
         initPhysics();

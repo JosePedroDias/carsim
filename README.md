@@ -4,62 +4,59 @@ This is me playing with ammo.js and threejs to attempt a KISS 3D physics car sim
 This is my nth attempt so don't expect too much...
 
 
-## log
-- got everything from https://github.com/kripken/ammo.js
-- copied raycast-vehicle-demo into demo1
-- created simplest d.ts file
-- changed things to const/let and dropped unused vars
-- added heightmap terrain and raining objects from terrain demo
-
-
-## potential todo list
+## Tentative plan to rule the world 
 - car
-    - play with car rig (dimensions, materials and params)
-    - car mods and visuals (rally, offroad, bus)
+    - [ ] play with car rig (dimensions, materials and params)
+    - [ ] car mods and visuals (rally, offroad, bus)
 - physics
-    - detect passing through waypoints
+    - [ ] detect passing through waypoints
 - controls
-    - reposition car action               (WIP)
-    - optional gamepad and touch input      50%
-    - check if it works with wheel
+    - [ ] reposition car ONGOING
+    - [x] support keys
+    - [x] support gamepad
+    - [x] support virtual gamepad with touch
 - camera
-    - implement cameras:
-        - fixed point - look at car 100%
-        - driver - attached to car   50%
-        - chase cam                   0%
-- gui
-    - basic velocimeter overlay
+    - [x] fixed point - look at car
+    - [ ] driver - attached to car WIP
+    - [ ] chase cam
+- GUI
+    - [ ] basic velocimeter overlay
 - sound generation
-    - engine sound
-    - braking
-    - collisions
+    - [ ] engine sound
+    - [ ] braking
+    - [ ] collisions
 - eyecandy
-    - decals
-    - particle generation for dirt and/or smoke
+    - [ ] decals
+    - [ ] particle generation for dirt and/or smoke
 - track
-    - parametric roads
+    - [x] load from heightmap + texture map
+    - [ ] load objects (trees, buildings, etc.)
+    - [ ] parametric roads
 
 
-## reference
+## Reference
 
 - [threejs docs](https://threejs.org/docs/)
 - bullet docs [1](https://pybullet.org/Bullet/BulletFull/), [2](https://github.com/bulletphysics/bullet3/blob/master/docs/Bullet_User_Manual.pdf)
 
 
-## bootstrap
+## Tools used
+
+- http://www.fracterra.com/wilbur.html - to create maps
+
+
+## Run locally:
 
     npx http-server .
 
 
-https://github.com/josephg/noisejs
-https://github.com/image-js/fast-png TODO (16 bit heightmap loading)
-https://yoannmoi.net/nipplejs/ (touch virtual joystick)
+## Stuff to check out:
 
-bullet api WIP
-https://github.com/kripken/ammo.js/blob/main/ammo.idl
-https://github.com/giniedp/webidl2ts
-
-
-https://stackoverflow.com/questions/tagged/ammo.js
-https://stackoverflow.com/questions/tagged/bulletphysics
+- https://github.com/josephg/noisejs
+- https://github.com/image-js/fast-png TODO (16 bit heightmap loading)
+- https://yoannmoi.net/nipplejs/ (touch virtual joystick)
+- https://github.com/kripken/ammo.js/blob/main/ammo.idl
+- https://github.com/giniedp/webidl2ts
+- https://stackoverflow.com/questions/tagged/ammo.js
+- https://stackoverflow.com/questions/tagged/bulletphysics
 

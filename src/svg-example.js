@@ -41,6 +41,9 @@ function inputUi() {
     const text = document.createElementNS(xmlns, 'text');
     text.setAttribute('x',  50);
     text.setAttribute('y',  200);
+    text.setAttribute('text-anchor', 'middle');        // X
+    text.setAttribute('alignment-baseline', 'middle'); // Y
+    text.setAttribute('font-size', 30);
     text.setAttribute('fill',  'white');
     text.appendChild(document.createTextNode('HELLO!'));
     svg.appendChild(text);

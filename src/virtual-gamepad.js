@@ -2,7 +2,7 @@
 const ACCEPT_MOUSE = false; // (good for debugging this in a desktop browser)
 
 function virtualGamepad(padConfigs, mouseSupport) {
-    const xmlns = 'http://www.w3.org/2000/svg';
+    const XMLNS = 'http://www.w3.org/2000/svg';
     const RAD2DEG = 180 / Math.PI;
     const PAD_FACTOR_FROM_MIN_DIM = 0.14;
 
@@ -14,40 +14,35 @@ function virtualGamepad(padConfigs, mouseSupport) {
 
             if (svg) document.body.removeChild(svg);
 
-            svg = document.createElementNS(xmlns, 'svg');
+            svg = document.createElementNS(XMLNS, 'svg');
             svg.setAttribute('width', dim + pad * 2);
             svg.setAttribute('height', dim + pad * 2);
             document.body.appendChild(svg);
 
             const cx = pad + dim / 2;
 
-            C = document.createElementNS(xmlns, 'circle');
+            C = document.createElementNS(XMLNS, 'circle');
             C.setAttribute('cx', cx);
             C.setAttribute('cy', cx);
-            // @ts-ignore
             C.setAttribute('r', dim / 2);
             C.setAttribute('fill', color);
-            // @ts-ignore
             C.setAttribute('opacity', 0.4);
             svg.appendChild(C);
 
             const r = dim * 0.3;
-            c = document.createElementNS(xmlns, 'circle');
+            c = document.createElementNS(XMLNS, 'circle');
             c.setAttribute('cx', cx);
             c.setAttribute('cy', cx);
-            // @ts-ignore
             c.setAttribute('r', r);
             c.setAttribute('fill', color);
-            // @ts-ignore
             c.setAttribute('opacity', 0.4);
             svg.appendChild(c);
 
-            const t = document.createElementNS(xmlns, 'text');
+            const t = document.createElementNS(XMLNS, 'text');
             t.setAttribute('x', cx);
             t.setAttribute('y', cx);
             t.setAttribute('text-anchor', 'middle');       // X
             t.setAttribute('dominant-baseline', 'middle'); // Y
-            // @ts-ignore
             t.setAttribute('font-size', r);
             t.setAttribute('fill', 'white');
             t.appendChild(document.createTextNode(label));

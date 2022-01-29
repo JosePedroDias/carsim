@@ -1,3 +1,5 @@
+// @ts-check
+
 const haveEvents = 'ongamepadconnected' in window;
 const controllers = {};
 

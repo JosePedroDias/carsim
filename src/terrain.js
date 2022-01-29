@@ -157,7 +157,9 @@ function createTerrainMesh(scene, terrainWidthExtents, terrainDepthExtents, terr
         const textureLoader = new THREE.TextureLoader();
         textureLoader.load(`./textures/${textureUrl}`, (texture) => {
             if (repeat) {
+                // @ts-ignore
                 texture.wrapS = THREE.RepeatWrapping;
+                // @ts-ignore
                 texture.wrapT = THREE.RepeatWrapping;
                 texture.repeat.set(terrainWidth - 1, terrainDepth - 1);
             }

@@ -76,9 +76,12 @@ TODO: Manage button up/down immediate events being polled in a simple manner.
 - texture loading
     - https://github.com/image-js/fast-png TODO (16 bit heightmap loading)
 
-- bulletphysics ammo.js d.ts
+- d.ts
+    - https://www.typescriptlang.org/dt/search?search=
     - https://github.com/kripken/ammo.js/blob/main/ammo.idl
     - https://github.com/giniedp/webidl2ts
+    - https://github.com/giniedp/ammojs-typed
+    - https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/three
 
 - terrain/map generation
     - http://www.fracterra.com/wilbur.html

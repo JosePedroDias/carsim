@@ -5,10 +5,10 @@
 
 
 (function() {
-    const xmlns = 'http://www.w3.org/2000/svg';
+    const XMLNS = 'http://www.w3.org/2000/svg';
 
     function createControllerUI(width, height, id) {
-        const svg = document.createElementNS(xmlns, 'svg');
+        const svg = document.createElementNS(XMLNS, 'svg');
         svg.setAttribute('id', id);
         svg.setAttribute('width', width);
         svg.setAttribute('height', height);
@@ -20,7 +20,7 @@
             const minV = minV_ !== undefined ? minV_ : 0;
             const maxV = 1;
 
-            const strokedRect = document.createElementNS(xmlns, 'rect');
+            const strokedRect = document.createElementNS(XMLNS, 'rect');
             strokedRect.setAttribute('x', x);
             strokedRect.setAttribute('y', y);
             strokedRect.setAttribute('width', maxW);
@@ -29,7 +29,7 @@
             strokedRect.setAttribute('fill', 'none');
             svg.appendChild(strokedRect);
 
-            const filledRect = document.createElementNS(xmlns, 'rect');
+            const filledRect = document.createElementNS(XMLNS, 'rect');
             filledRect.setAttribute('x', x);
             filledRect.setAttribute('y', y);
             filledRect.setAttribute('width', 0);
@@ -49,7 +49,7 @@
             const minV = minV_ !== undefined ? minV_ : 0;
             const maxV = 1;
 
-            const strokedRect = document.createElementNS(xmlns, 'rect');
+            const strokedRect = document.createElementNS(XMLNS, 'rect');
             strokedRect.setAttribute('x', x);
             strokedRect.setAttribute('y', y);
             strokedRect.setAttribute('width', maxW);
@@ -58,7 +58,7 @@
             strokedRect.setAttribute('fill', 'none');
             svg.appendChild(strokedRect);
 
-            const filledRect = document.createElementNS(xmlns, 'rect');
+            const filledRect = document.createElementNS(XMLNS, 'rect');
             filledRect.setAttribute('x', x);
             filledRect.setAttribute('y', inverted ? y + maxH : y);
             filledRect.setAttribute('width', maxW);
@@ -80,7 +80,7 @@
             const maxR = 10;
             const maxV = 1;
 
-            const strokedCircle = document.createElementNS(xmlns, 'circle');
+            const strokedCircle = document.createElementNS(XMLNS, 'circle');
             strokedCircle.setAttribute('cx', x);
             strokedCircle.setAttribute('cy', y);
             strokedCircle.setAttribute('r', maxR);
@@ -88,7 +88,7 @@
             strokedCircle.setAttribute('fill', 'none');
             svg.appendChild(strokedCircle);
 
-            const filledCircle = document.createElementNS(xmlns, 'circle');
+            const filledCircle = document.createElementNS(XMLNS, 'circle');
             filledCircle.setAttribute('cx', x);
             filledCircle.setAttribute('cy', y);
             filledCircle.setAttribute('r', 0);

@@ -110,6 +110,7 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
     function sync(dt) {
         const speed = vehicle.getCurrentSpeedKmHour();
 
+        // @ts-ignore
         speedometer.innerHTML = (speed < 0 ? '(R) ' : '') + Math.abs(speed).toFixed(1) + ' km/h';
 
         breakingForce = 0;

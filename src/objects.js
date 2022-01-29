@@ -4,11 +4,11 @@ const materialDynamic = new THREE.MeshPhongMaterial({ color: 0xfca400 });
 const materialStatic = new THREE.MeshPhongMaterial({ color: 0x999999 });
 
 const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
-let TRANSFORM_AUX;
+let transformAux;
 
 function createBox(physicsWorld, scene, syncList, pos, quat, w, l, h, mass, friction, receiveShadow) {
-    if (!TRANSFORM_AUX) {
-        TRANSFORM_AUX = new Ammo.btTransform();
+    if (!transformAux) {
+        transformAux = new Ammo.btTransform();
     }
 
     const material = mass > 0 ? materialDynamic : materialStatic;
@@ -49,9 +49,9 @@ function createBox(physicsWorld, scene, syncList, pos, quat, w, l, h, mass, fric
         function sync(dt) {
             const ms = body.getMotionState();
             if (ms) {
-                ms.getWorldTransform(TRANSFORM_AUX);
-                const p = TRANSFORM_AUX.getOrigin();
-                const q = TRANSFORM_AUX.getRotation();
+                ms.getWorldTransform(transformAux);
+                const p = transformAux.getOrigin();
+                const q = transformAux.getRotation();
                 mesh.position.set(p.x(), p.y(), p.z());
                 mesh.quaternion.set(q.x(), q.y(), q.z(), q.w());
             }

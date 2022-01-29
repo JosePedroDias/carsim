@@ -4,8 +4,6 @@ const uy = new THREE.Vector3(0, 1, 0);
 
 const DEG2RAD = Math.PI / 180;
 
-//const hm = 'displacement-map.jpg';
-//const hm = 'Heightmap1.png';
 const hm = '1h2.png';
 const tm = '1t.png';
 const gridTm = 'grid.png';
@@ -26,7 +24,9 @@ const CM_CHASE = 2;
 
 let CAMERA_MODE = CM_STATIC; // CM_STATIC CM_ONBOARD
 
-Ammo().then((Ammo) => {
+Ammo().then(
+    /** @param {Ammo} Ammo */
+    (Ammo) => {
     // Heightfield parameters
 
     const terrainWidthExtents = TERRAIN_EXTENT;
@@ -46,7 +46,7 @@ Ammo().then((Ammo) => {
     let chassisMesh;
     const clock = new THREE.Clock();
     const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
-
+ 
     // Physics constiables
     let collisionConfiguration;
     let dispatcher;
@@ -119,6 +119,7 @@ Ammo().then((Ammo) => {
         if (WITH_SHADOWS) {
             renderer.shadowMap.enabled = true;
         }
+        // @ts-ignore
         renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
         renderer.setClearColor(0xbfd1e5);
 
@@ -274,6 +275,7 @@ Ammo().then((Ammo) => {
         // car
         const carInitialQuat = new THREE.Quaternion();
         carInitialQuat.setFromAxisAngle(uy, CAR_ORIENTATION_DEGREES * DEG2RAD);
+        // @ts-ignore
         chassisMesh = createVehicle(physicsWorld, scene, syncList, new THREE.Vector3(...CAR_POSITION), carInitialQuat);
     }
 

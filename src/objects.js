@@ -1,3 +1,5 @@
+// @ts-check
+
 const materialDynamic = new THREE.MeshPhongMaterial({ color: 0xfca400 });
 const materialStatic = new THREE.MeshPhongMaterial({ color: 0x999999 });
 

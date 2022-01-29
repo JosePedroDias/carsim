@@ -1,3 +1,5 @@
+// @ts-check
+
 const materialInteractive = new THREE.MeshPhongMaterial({ color: 0x990000 });
 
 const v = {

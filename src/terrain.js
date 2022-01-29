@@ -57,7 +57,7 @@ function createTerrainShape(Ammo, terrainWidthExtents, terrainDepthExtents, terr
     return heightFieldShape;
 }
 
-function sinusHeightmap(width, depth, minHeight, maxHeight) {
+/* function sinusHeightmap(width, depth, minHeight, maxHeight) {
     return new Promise(resolve => {
         // Generates the height data (a sinus wave)
         const size = width * depth;
@@ -105,7 +105,7 @@ function simplexHeightmap(width, depth, minHeight, maxHeight) {
 
         resolve(data);
     });
-}
+} */
 
 function readHeightmap(width, depth, minHeight, maxHeight, heightmapUrl) {
     return new Promise(resolve => {

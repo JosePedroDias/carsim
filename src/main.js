@@ -24,13 +24,9 @@ const CM_STATIC = 0;
 const CM_ONBOARD = 1;
 const CM_CHASE = 2;
 
-const CAMERA_MODE = CM_STATIC;
-//const CAMERA_MODE = CM_ONBOARD;
+let CAMERA_MODE = CM_STATIC; // CM_STATIC CM_ONBOARD
 
 Ammo().then((Ammo) => {
-    // - Global constiables -
-    const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
-
     // Heightfield parameters
 
     const terrainWidthExtents = TERRAIN_EXTENT;
@@ -49,6 +45,7 @@ Ammo().then((Ammo) => {
     let camera, scene, renderer;
     let chassisMesh;
     const clock = new THREE.Clock();
+    const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
 
     // Physics constiables
     let collisionConfiguration;
@@ -64,7 +61,6 @@ Ammo().then((Ammo) => {
     const objectTimePeriod = 3;
     let timeNextSpawn = time + objectTimePeriod;
     const maxNumObjects = 30;
-
     
     const dq = new THREE.Quaternion();
     dq.setFromAxisAngle(uy, Math.PI);
@@ -72,12 +68,24 @@ Ammo().then((Ammo) => {
     let speedometer;
 
     // Keyboard actions
+    window.nextCamera = () => {
+        if (CAMERA_MODE === CM_STATIC) CAMERA_MODE = CM_ONBOARD;
+        else CAMERA_MODE = CM_STATIC;
+
+        if (CAMERA_MODE === CM_STATIC) {
+            camera.position.x = STATIC_CAM_POSITION[0];
+            camera.position.y = STATIC_CAM_POSITION[1];
+            camera.position.z = STATIC_CAM_POSITION[2];
+        }
+    }
+
     const keysActions = {
         KeyW:  { k:'y',  on:-1, off:0 },
         KeyS:  { k:'y',  on: 1, off:0 },
         KeyA:  { k:'x',  on:-1, off:0 },
         KeyD:  { k:'x',  on: 1, off:0 },
-        Space: { k:'b1', on: 1, off:0 }
+        Space: { k:'b1', on: 1, off:0 },
+        KeyC:  window.nextCamera
     };
 
     // - Functions -
@@ -125,8 +133,6 @@ Ammo().then((Ammo) => {
         //const dirLightHelper = new THREE.CameraHelper(dirLight.shadow.camera);
         //scene.add(dirLightHelper);
 
-        
-
         document.body.appendChild(renderer.domElement);
 
         stats = new Stats();
@@ -153,7 +159,8 @@ Ammo().then((Ammo) => {
             if (window.controller.active) return;
             const ka = keysActions[ev.code];
             if (!ka) return;
-            window.controller[ka.k] = ka.off;
+            if (typeof ka === 'function') ka();
+            else window.controller[ka.k] = ka.off;
             ev.preventDefault();
             ev.stopPropagation();
             return false;

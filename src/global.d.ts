@@ -51,4 +51,10 @@ interface Ammo_ {
     btRaycastVehicle: any;
 }
 
+interface Window {
+    controller: {
+        active: boolean
+    }
+}
+
 const Ammo:() => Promise<Ammo_>;

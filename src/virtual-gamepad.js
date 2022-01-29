@@ -1,6 +1,6 @@
 // @ts-check
 
-function virtualGamepad(padConfigs) {
+function virtualGamepad(padConfigs, mouseSupport) {
     const xmlns = 'http://www.w3.org/2000/svg';
     const RAD2DEG = 180 / Math.PI;
     const PAD_FACTOR_FROM_MIN_DIM = 0.14;
@@ -204,57 +204,66 @@ function virtualGamepad(padConfigs) {
         updatePadsDims([window.innerWidth, window.innerHeight]);
     });
 
-    for (let evName of 'mousedown mousemove mouseup touchstart touchmove touchend'.split(' ')) {
+    let eventNames = ['touchstart', 'touchmove', 'touchend'];
+    if (mouseSupport) {
+        eventNames = eventNames.concat(['mousedown', 'mousemove', 'mouseup']);
+    }
+
+    for (let evName of eventNames) {
         window.addEventListener(evName, handleTouch);
     }
 
     return pads;
 }
 
-const [pSteer, pAccelBrake, pRecover] = virtualGamepad([
-    {
-        label: 'steer',
-        color: 'cyan',
-        area: { x: [0, 0.5], y: [0.5, 1] },
-        deadZone: 0,
-        fixes: { y: true }
-    },
-    {
-        label: 'accel/brake',
-        color: 'yellow',
-        area: { x: [0.5, 1], y: [0.5, 1] },
-        deadZone: 0,
-        fixes: { x: true }
-    },
-    {
-        label: 'recover',
-        color: 'magenta',
-        area: { x: [0, 1], y: [0, 0.5] },
-        deadZone: 0,
-        fixes: { x: true, y: true }
+{
+    if ('ontouchstart' in window) {
+        const [pSteer, pAccelBrake, pRecover] = virtualGamepad([
+            {
+                label: 'steer',
+                color: 'cyan',
+                area: { x: [0, 0.5], y: [0.5, 1] },
+                deadZone: 0,
+                fixes: { y: true }
+            },
+            {
+                label: 'accel/brake',
+                color: 'yellow',
+                area: { x: [0.5, 1], y: [0.5, 1] },
+                deadZone: 0,
+                fixes: { x: true }
+            },
+            {
+                label: 'recover',
+                color: 'magenta',
+                area: { x: [0, 1], y: [0, 0.5] },
+                deadZone: 0,
+                fixes: { x: true, y: true }
+            }
+        ]);
+
+        // const clamp = (v, m, M) => v < m ? m : v > M ? M : v;
+
+        let started = false;
+        setInterval(() => {
+            const dS = pSteer.getData();
+            const dAB = pAccelBrake.getData();
+            const dR = pRecover.getData();
+
+            if (!started) {
+                if (dS.isDown || dAB.isDown || dR.isDown) started = true;
+                else return;
+            }
+
+            const steer = dS.delta1[0];
+            //console.warn(`steer ${steer.toFixed(3)}`);
+            window.controller.x = steer;
+            
+            const accBr = dAB.delta1[1];
+            //console.warn(`accBr ${accBr.toFixed(3)}`);
+            window.controller.y = accBr; // clamp(accBr, -1, 1);
+
+            window.controller.b1 = dR.isDown;
+        }, 1000 /20);
     }
-]);
-
-const clamp = (v, m, M) => v < m ? m : v > M ? M : v;
-
-let started = false;
-setInterval(() => {
-    const dS = pSteer.getData();
-    const dAB = pAccelBrake.getData();
-    const dR = pRecover.getData();
-
-    if (!started) {
-        if (dS.isDown || dAB.isDown || dR.isDown) started = true;
-        else return;
-    }
-
-    const steer = dS.delta1[0];
-    //console.warn(`steer ${steer.toFixed(3)}`);
-    window.controller.x = steer;
-    
-    const accBr = dAB.delta1[1];
-    //console.warn(`accBr ${accBr.toFixed(3)}`);
-    window.controller.y = accBr; // clamp(accBr, -1, 1);
-
-    window.controller.b1 = dR.isDown;
-}, 1000 /20);
+}

@@ -17,6 +17,7 @@ interface Window {
     carHud: {
         changeSpeed(v:number);
     }
+    userIndices: {[name: string]: number }
 }
 
 interface Element {
@@ -94,11 +95,15 @@ declare module THREE {
         constructor(fov:number, ar:number, near?:number, far?:number);
     }
     class Quaternion {
-        setFromAxisAngle: (uy: any, PI: number) => void;
         constructor();
         constructor(x:number, y:number,z:number, w?:number);
+        x: number;
+        y: number;
+        z: number;
+        w: number;
         set: (x?:number, y?:number, z?:number, w?:number) => void;
         copy(q:Quaternion);
+        setFromAxisAngle: (uy: any, PI: number) => void;
     }
     class Scene {
         add: (o:any) => void;

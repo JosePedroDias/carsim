@@ -24,6 +24,20 @@ const CM_CHASE = 2;
 
 let CAMERA_MODE = CM_STATIC; // CM_STATIC CM_ONBOARD
 
+/** @type {{[name: string]: number }} */
+window.userIndices = {
+    TERRAIN: 1,
+    OBJECT: 2,
+    CAR: 3
+};
+
+/** @type {{[name: number]: string }} */
+const userIndicesName = {};
+for (let [k, v] of Object.entries(window.userIndices)) {
+    userIndicesName[v] = k;
+}
+
+
 Ammo().then(
     /** @param {Ammo} Ammo */
     (Ammo) => {
@@ -38,6 +52,7 @@ Ammo().then(
     const terrainMaxHeight = 0;
     const terrainMinHeight = -TERRAIN_DELTA_HEIGHT;
 
+    /** @type {Float32Array} */
     let heightData;
 
     // Graphics constiables
@@ -52,6 +67,8 @@ Ammo().then(
     let dispatcher;
     let broadphase;
     let solver;
+
+    /** @type {Ammo.btDiscreteDynamicsWorld} */
     let physicsWorld;
     const dynamicObjects = [];
     const transformAux1 = new Ammo.btTransform();
@@ -186,7 +203,7 @@ Ammo().then(
         physicsWorld.setGravity(new Ammo.btVector3(0, -9.82, 0));
 
         // Create the terrain body
-        const groundShape = createTerrainShape(Ammo, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, heightData);
+        const groundShape = createTerrainShape(terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, heightData);
         const groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
         // Shifts the terrain, since bullet re-centers it on its bounding box.
@@ -195,7 +212,38 @@ Ammo().then(
         const groundLocalInertia = new Ammo.btVector3(0, 0, 0);
         const groundMotionState = new Ammo.btDefaultMotionState(groundTransform);
         const groundBody = new Ammo.btRigidBody(new Ammo.btRigidBodyConstructionInfo(groundMass, groundMotionState, groundShape, groundLocalInertia));
+        groundBody.setUserIndex(window.userIndices.TERRAIN);
         physicsWorld.addRigidBody(groundBody);
+    }
+
+    function detectCollision(){
+        let dispatcher = physicsWorld.getDispatcher();
+        let numManifolds = dispatcher.getNumManifolds();
+        for (let i = 0; i < numManifolds; ++i) {
+            let contactManifold = dispatcher.getManifoldByIndexInternal(i);
+            const b0 = contactManifold.getBody0();
+            const b1 = contactManifold.getBody1();
+
+            const u = b0.getUserIndex();
+            const U = b1.getUserIndex();
+
+            // see window.userIndices in the beginning of this file for number meanings
+            if (u === 0 || U === 0) continue; // UNKNOWN
+            if ( (u === 1 && U === 2) || (U === 1 && u === 2) ) continue; // TERRAIN/OBJECT
+            if ( (u === 1 && U === 3) || (U === 1 && u === 3) ) continue; // TERRAIN/CAR
+            console.warn(`collision ${userIndicesName[u]}/${userIndicesName[U]}`);
+            
+            /*const u0 = b0.getUserPointer();
+            const u1 = b1.getUserPointer();
+            console.warn(u0, u1);*/
+
+            /* let numContacts = contactManifold.getNumContacts();
+            for (let j = 0; j < numContacts; ++j) {
+                let contactPoint = contactManifold.getContactPoint(j);
+                //let distance = contactPoint.getDistance();
+                //console.log({manifoldIndex: i, contactIndex: j, distance: distance});
+            } */
+        }
     }
 
     function tick() {
@@ -249,6 +297,8 @@ Ammo().then(
         else {
             // chase
         }
+
+        // detectCollision();
 
         renderer.render(scene, camera);
 

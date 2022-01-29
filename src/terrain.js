@@ -2,20 +2,28 @@
 
 const DISABLE_DEACTIVATION = 4;
 
-function createTerrainShape(Ammo, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, heightData) {
+/**
+ * @param {number} terrainWidthExtents 
+ * @param {number} terrainDepthExtents 
+ * @param {number} terrainWidth 
+ * @param {number} terrainDepth 
+ * @param {number} terrainMinHeight 
+ * @param {number} terrainMaxHeight 
+ * @param {Float32Array} heightData 
+ * @returns {Ammo.btHeightfieldTerrainShape}
+ */
+function createTerrainShape(terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight, heightData) {
     // This parameter is not really used, since we are using PHY_FLOAT height data type and hence it is ignored
     const heightScale = 1;
-
     // Up axis = 0 for X, 1 for Y, 2 for Z. Normally 1 = Y is used.
     const upAxis = 1;
-
     // hdt, height data type. "PHY_FLOAT" is used. Possible values are "PHY_FLOAT", "PHY_UCHAR", "PHY_SHORT"
     const hdt = "PHY_FLOAT";
-
     // Set this to your needs (inverts the triangles)
     const flipQuadEdges = false;
 
     // Creates height data buffer in Ammo heap
+    // @ts-ignore
     const ammoHeightData = Ammo._malloc(4 * terrainWidth * terrainDepth);
 
     // Copy the javascript height data array to the Ammo one.
@@ -24,6 +32,7 @@ function createTerrainShape(Ammo, terrainWidthExtents, terrainDepthExtents, terr
     for (let j = 0; j < terrainDepth; j++) {
         for (let i = 0; i < terrainWidth; i++) {
             // write 32-bit float data to memory
+            // @ts-ignore
             Ammo.HEAPF32[ammoHeightData + p2 >> 2] = heightData[p];
             p++;
             // 4 bytes/float
@@ -40,6 +49,7 @@ function createTerrainShape(Ammo, terrainWidthExtents, terrainDepthExtents, terr
         terrainMinHeight,
         terrainMaxHeight,
         upAxis,
+        // @ts-ignore
         hdt,
         flipQuadEdges
     );
@@ -104,6 +114,14 @@ function simplexHeightmap(width, depth, minHeight, maxHeight) {
     });
 } */
 
+/**
+ * @param {number} width 
+ * @param {number} depth 
+ * @param {number} minHeight 
+ * @param {number} maxHeight 
+ * @param {string} heightmapUrl 
+ * @returns {Promise<Float32Array>}
+ */
 function readHeightmap(width, depth, minHeight, maxHeight, heightmapUrl) {
     return new Promise(resolve => {
         const img = new Image();
@@ -127,7 +145,7 @@ function readHeightmap(width, depth, minHeight, maxHeight, heightmapUrl) {
                     const px = Math.round(x / width * img.width);
                     const py = Math.round(z / depth * img.height);
                     const i = (px + py * img.width) * 4;
-                    const v = id[i];// + id[i+1] + id[i+2];
+                    const v = id[i];
                     data[p++] = minHeight + hRange * (v / 255);
                 }
             }
@@ -137,6 +155,17 @@ function readHeightmap(width, depth, minHeight, maxHeight, heightmapUrl) {
     });
 }
 
+/**
+ * 
+ * @param {THREE.Scene} scene 
+ * @param {number} terrainWidthExtents 
+ * @param {number} terrainDepthExtents 
+ * @param {number} terrainWidth 
+ * @param {number} terrainDepth 
+ * @param {*} heightData 
+ * @param {string} textureUrl 
+ * @param {boolean} repeat 
+ */
 function createTerrainMesh(scene, terrainWidthExtents, terrainDepthExtents, terrainWidth, terrainDepth, heightData, textureUrl, repeat) {
     const geometry = new THREE.PlaneBufferGeometry(terrainWidthExtents, terrainDepthExtents, terrainWidth - 1, terrainDepth - 1);
         geometry.rotateX(- Math.PI / 2);

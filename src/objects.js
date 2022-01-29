@@ -6,6 +6,20 @@ const materialStatic = new THREE.MeshPhongMaterial({ color: 0x999999 });
 const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
 let transformAux;
 
+/**
+ * 
+ * @param {Ammo.btDiscreteDynamicsWorld} physicsWorld 
+ * @param {THREE.Scene} scene 
+ * @param {Array} syncList 
+ * @param {THREE.Vector3} pos 
+ * @param {THREE.Quaternion} quat 
+ * @param {number} w 
+ * @param {number} l 
+ * @param {number} h 
+ * @param {number} mass 
+ * @param {number} [friction=undefined]
+ * @param {boolean} [receiveShadow=undefined]
+ */
 function createBox(physicsWorld, scene, syncList, pos, quat, w, l, h, mass, friction, receiveShadow) {
     if (!transformAux) {
         transformAux = new Ammo.btTransform();
@@ -36,6 +50,7 @@ function createBox(physicsWorld, scene, syncList, pos, quat, w, l, h, mass, fric
 
     const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, geometry, localInertia);
     const body = new Ammo.btRigidBody(rbInfo);
+    body.setUserIndex(window.userIndices.OBJECT);
 
     body.setFriction(friction);
     //body.setRestitution(.9);
@@ -61,6 +76,11 @@ function createBox(physicsWorld, scene, syncList, pos, quat, w, l, h, mass, fric
     }
 }
 
+/**
+ * @param {Ammo.btDiscreteDynamicsWorld} physicsWorld 
+ * @param {THREE.Scene} scene 
+ * @param {Array} syncList 
+ */
 function createBoxWall(physicsWorld, scene, syncList) {
     const size = .75;
     const nw = 8;
@@ -70,6 +90,15 @@ function createBoxWall(physicsWorld, scene, syncList) {
             createBox(physicsWorld, scene, syncList, new THREE.Vector3(size * j - (size * (nw - 1)) / 2, size * i, 10), ZERO_QUATERNION, size, size, size, 10);
 }
 
+/**
+ * 
+ * @param {Ammo.btDiscreteDynamicsWorld} physicsWorld 
+ * @param {THREE.Scene} scene 
+ * @param {Array<THREE.Mesh>} dynamicObjects 
+ * @param {number} terrainWidth 
+ * @param {number} terrainDepth 
+ * @param {number} terrainMaxHeight 
+ */
 function generateObject(physicsWorld, scene, dynamicObjects, terrainWidth, terrainDepth, terrainMaxHeight) {
     const numTypes = 4;
     const objectType = Math.ceil(Math.random() * numTypes);
@@ -137,6 +166,7 @@ function generateObject(physicsWorld, scene, dynamicObjects, terrainWidth, terra
     const motionState = new Ammo.btDefaultMotionState(transform);
     const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
     const body = new Ammo.btRigidBody(rbInfo);
+    body.setUserIndex(window.userIndices.OBJECT);
 
     threeObject.userData.physicsBody = body;
 
@@ -146,6 +176,9 @@ function generateObject(physicsWorld, scene, dynamicObjects, terrainWidth, terra
     physicsWorld.addRigidBody(body);
 }
 
+/**
+ * @returns {THREE.Material}
+ */
 function createObjectMaterial() {
     var c = Math.floor(Math.random() * (1 << 24));
     return new THREE.MeshPhongMaterial({ color: c });

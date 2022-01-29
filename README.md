@@ -13,7 +13,7 @@ This is my nth attempt so don't expect too much...
     - [ ] car mods and visuals (rally, offroad, bus)
     - [ ] EVENTUALLY gears/rpms and their overlays (more relevant once engine sounds exist)
 - physics
-    - [ ] detect passing through waypoints
+    - [ ] detect passing through waypoints ONGOING
 - controls
     - [ ] reposition car ONGOING
     - [x] support keys
@@ -78,6 +78,9 @@ TODO: Manage button up/down immediate events being polled in a simple manner.
 
 - texture loading
     - https://github.com/image-js/fast-png TODO (16 bit heightmap loading)
+
+- helping samples and articles on ammo.js / bulletphysics
+    - https://medium.com/@bluemagnificent/collision-detection-in-javascript-3d-physics-using-ammo-js-and-three-js-31a5569291ef
 
 - d.ts
     - https://www.typescriptlang.org/dt/search?search=

@@ -44,6 +44,14 @@ const v = {
     maxBreakingForce: 120
 };
 
+/**
+ * @param {Ammo.btDiscreteDynamicsWorld} physicsWorld 
+ * @param {THREE.Scene} scene 
+ * @param {Array} syncList 
+ * @param {THREE.Vector3} pos 
+ * @param {THREE.Quaternion} quat 
+ * @returns {THREE.Mesh}
+ */
 function createVehicle(physicsWorld, scene, syncList, pos, quat) {
     // Vehicle constants
 
@@ -60,6 +68,7 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
     geometry.calculateLocalInertia(massVehicle, localInertia);
     const body = new Ammo.btRigidBody(new Ammo.btRigidBodyConstructionInfo(massVehicle, motionState, geometry, localInertia));
     body.setActivationState(DISABLE_DEACTIVATION);
+    body.setUserIndex(window.userIndices.CAR);
     physicsWorld.addRigidBody(body);
     const chassisMesh = createChassisMesh(scene, chassis.width, chassis.height, chassis.length);
 

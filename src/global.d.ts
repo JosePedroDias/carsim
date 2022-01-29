@@ -53,7 +53,11 @@ interface Ammo_ {
 
 interface Window {
     controller: {
-        active: boolean
+        active: boolean,
+        x: number,
+        y: number,
+        b1: boolean,
+        b2: boolean
     }
 }
 

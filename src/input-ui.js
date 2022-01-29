@@ -69,7 +69,7 @@
 
             return function update(v) {
                 const h = maxH * (v - minV)/(maxV - minV);
-                filledRect.setAttribute('height', h);
+                h >= 0 && filledRect.setAttribute('height', h);
                 if (inverted) {
                     filledRect.setAttribute('y', y + (maxH - h));
                 }
@@ -111,6 +111,7 @@
         const axisY =   cuG.createVerticalAxis([10, 30], -1, false, 'magenta');
         //const accel =   cuG.createVerticalAxis([30, 30],  0, 'green');
         const b1    =         cuG.createButton([60, 40],     'yellow');
+        const b2    =         cuG.createButton([90, 40],     'red');
 
         function update() {
             requestAnimationFrame(update);
@@ -118,6 +119,7 @@
             axisX(c.x);
             axisY(c.y);
             b1(c.b1);
+            b2(c.b2);
         }
         update();
     }
@@ -128,6 +130,7 @@
         const brake =   cuC.createVerticalAxis([10, 30],  0, true, 'red');
         const accel =   cuC.createVerticalAxis([30, 30], -1, true, 'green');
         const b1    =         cuC.createButton([60, 40],     'magenta');
-        window.cuC = { cuC, steer, brake, accel, b1 }
+        const b2    =         cuC.createButton([90, 40],     'rgb(0, 127, 127)');
+        window.cuC = { cuC, steer, brake, accel, b1, b2 }
     }
 })();

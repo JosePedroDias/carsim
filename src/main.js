@@ -68,7 +68,13 @@ Ammo().then((Ammo) => {
     let speedometer;
 
     // Keyboard actions
+    let lastNextCameraT = 0;
+    const nextCameraIgnoreDeltaT = 500;
     window.nextCamera = () => {
+        const t = Date.now();
+        if (t-lastNextCameraT < nextCameraIgnoreDeltaT) return;
+        lastNextCameraT = t;
+
         if (CAMERA_MODE === CM_STATIC) CAMERA_MODE = CM_ONBOARD;
         else CAMERA_MODE = CM_STATIC;
 
@@ -80,12 +86,18 @@ Ammo().then((Ammo) => {
     }
 
     const keysActions = {
-        KeyW:  { k:'y',  on:-1, off:0 },
-        KeyS:  { k:'y',  on: 1, off:0 },
-        KeyA:  { k:'x',  on:-1, off:0 },
-        KeyD:  { k:'x',  on: 1, off:0 },
-        Space: { k:'b1', on: 1, off:0 },
-        KeyC:  window.nextCamera
+        KeyW:       { k:'y',  on:-1, off:0 },
+        KeyS:       { k:'y',  on: 1, off:0 },
+        KeyA:       { k:'x',  on:-1, off:0 },
+        KeyD:       { k:'x',  on: 1, off:0 },
+
+        ArrowUp:    { k:'y',  on:-1, off:0 },
+        ArrowDown:  { k:'y',  on: 1, off:0 },
+        ArrowLeft:  { k:'x',  on:-1, off:0 },
+        ArrowRight: { k:'x',  on: 1, off:0 },
+
+        Space:      { k:'b1', on: 1, off:0 },
+        KeyC:       { k:'b2', on: 1, off:0 },
     };
 
     // - Functions -
@@ -149,7 +161,7 @@ Ammo().then((Ammo) => {
         window.addEventListener('keydown', (ev) => {
             if (window.controller.active) return;
             const ka = keysActions[ev.code];
-            if (!ka) return;
+            if (!ka) return;// console.warn(ev.code);
             window.controller[ka.k] = ka.on;
             ev.preventDefault();
             ev.stopPropagation();
@@ -224,7 +236,8 @@ Ammo().then((Ammo) => {
         else if (CAMERA_MODE === CM_ONBOARD) {
             // camera in car
             const chassisPos = chassisMesh.position.clone();
-            const chassisDir = chassisMesh.getWorldDirection();
+            const chassisDir = new THREE.Vector3();
+            chassisMesh.getWorldDirection(chassisDir);
             chassisDir.multiplyScalar(-2);
             chassisPos.add(chassisDir);
 

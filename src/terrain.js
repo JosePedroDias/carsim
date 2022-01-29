@@ -35,13 +35,10 @@ function createTerrainShape(Ammo, terrainWidthExtents, terrainDepthExtents, terr
     const heightFieldShape = new Ammo.btHeightfieldTerrainShape(
         terrainWidth,
         terrainDepth,
-
         ammoHeightData,
-
         heightScale,
         terrainMinHeight,
         terrainMaxHeight,
-
         upAxis,
         hdt,
         flipQuadEdges

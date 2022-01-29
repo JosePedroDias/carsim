@@ -118,14 +118,17 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
 
         const c = window.controller;
 
+        // update input-ui if defined
         const cuC = window.cuC;
         if (cuC) {
             cuC.steer(c.x);
             cuC.accel(c.y < 0 ? -c.y : -c.y*0.5);
             cuC.brake(speed > 1 ? c.y : 0);
             cuC.b1(c.b1);
+            cuC.b2(c.b2);
         }
         
+        // map controller values to physics
         if (c.y < 0) {
             engineForce = maxEngineForce * -c.y;
             breakingForce = 0;
@@ -147,6 +150,9 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
             rb.setLinearVelocity(vec);
             
             // TODO rotate it
+        }
+        if (c.b2) {
+            window.nextCamera();
         }
 
         // wheel drive

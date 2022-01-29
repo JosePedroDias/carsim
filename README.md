@@ -37,12 +37,11 @@ This is my nth attempt so don't expect too much...
 ## Reference
 
 - [threejs docs](https://threejs.org/docs/)
-- bullet docs [1](https://pybullet.org/Bullet/BulletFull/), [2](https://github.com/bulletphysics/bullet3/blob/master/docs/Bullet_User_Manual.pdf)
-
-
-## Tools used
-
-- http://www.fracterra.com/wilbur.html - to create maps
+- bullet docs  
+[API](https://pybullet.org/Bullet/BulletFull/),  
+[pdf](https://github.com/bulletphysics/bullet3/blob/master/docs/Bullet_User_Manual.pdf)
+[SO [ammo.js]](https://stackoverflow.com/questions/tagged/ammo.js)
+[SO [bulletphysics]](https://stackoverflow.com/questions/tagged/bulletphysics)
 
 
 ## Run locally:
@@ -52,11 +51,20 @@ This is my nth attempt so don't expect too much...
 
 ## Stuff to check out:
 
-- https://github.com/josephg/noisejs
-- https://github.com/image-js/fast-png TODO (16 bit heightmap loading)
-- https://yoannmoi.net/nipplejs/ (touch virtual joystick)
-- https://github.com/kripken/ammo.js/blob/main/ammo.idl
-- https://github.com/giniedp/webidl2ts
-- https://stackoverflow.com/questions/tagged/ammo.js
-- https://stackoverflow.com/questions/tagged/bulletphysics
+- noise generation
+    - https://github.com/josephg/noisejs
 
+- texture loading
+    - https://github.com/image-js/fast-png TODO (16 bit heightmap loading)
+
+- bulletphysics ammo.js d.ts
+    - https://github.com/kripken/ammo.js/blob/main/ammo.idl
+    - https://github.com/giniedp/webidl2ts
+
+- terrain/map generation
+    - http://www.fracterra.com/wilbur.html
+    - https://www.world-machine.com/features.php
+
+- engine sounds
+    - https://github.com/Antonio-R1/engine-sound-generator
+    - https://antonio-r1.github.io/engine-sound-generator/src/engine_sound_generator/sounds_worklet.htm

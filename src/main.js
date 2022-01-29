@@ -1,5 +1,9 @@
 // @ts-check
 
+const uy = new THREE.Vector3(0, 1, 0);
+
+const DEG2RAD = Math.PI / 180;
+
 //const hm = 'displacement-map.jpg';
 //const hm = 'Heightmap1.png';
 const hm = '1h2.png';
@@ -12,6 +16,7 @@ const TERRAIN_RESOLUTION = 128*2; // MESH RESOLUTION
 const TERRAIN_EXTENT = 100*2; // ACTUAL DIMS
 const TERRAIN_DELTA_HEIGHT = 5; // ACTUAL DIMS
 
+const CAR_ORIENTATION_DEGREES = 90;
 const CAR_POSITION = [0, 4, -31.5];
 const STATIC_CAM_POSITION = [0, 12, -50];
 
@@ -60,7 +65,7 @@ Ammo().then((Ammo) => {
     let timeNextSpawn = time + objectTimePeriod;
     const maxNumObjects = 30;
 
-    const uy = new THREE.Vector3(0, 1, 0);
+    
     const dq = new THREE.Quaternion();
     dq.setFromAxisAngle(uy, Math.PI);
 
@@ -247,7 +252,9 @@ Ammo().then((Ammo) => {
         //createBoxWall(physicsWorld, scene, syncList);
 
         // car
-        chassisMesh = createVehicle(physicsWorld, scene, syncList, new THREE.Vector3(...CAR_POSITION), ZERO_QUATERNION);
+        const carInitialQuat = new THREE.Quaternion();
+        carInitialQuat.setFromAxisAngle(uy, CAR_ORIENTATION_DEGREES * DEG2RAD);
+        chassisMesh = createVehicle(physicsWorld, scene, syncList, new THREE.Vector3(...CAR_POSITION), carInitialQuat);
     }
 
     // - Init -

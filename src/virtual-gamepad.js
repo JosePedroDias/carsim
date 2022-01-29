@@ -5,12 +5,6 @@ function virtualGamepad(padConfigs) {
     const RAD2DEG = 180 / Math.PI;
     const PAD_FACTOR_FROM_MIN_DIM = 0.14;
 
-    /*const el = document.createElement('div');
-    el.style.textAlign = 'left';
-    el.appendChild(document.createTextNode('xx'));
-    document.body.appendChild(el);
-    function log(txt) { el.innerHTML = txt; }*/
-
     function _createPad({ color, label }) {
         let svg, dim, c, C, pad;
 
@@ -113,6 +107,8 @@ function virtualGamepad(padConfigs) {
             } else if (isUp) {
                 downAt = undefined;
                 lastAt = undefined;
+                lastDist = 0;
+                lastDelta = [0, 0];
                 g.setOpacity(0.5);
                 g.moveSmall([0, 0]);
             } else if (downAt) { // move while down
@@ -163,6 +159,7 @@ function virtualGamepad(padConfigs) {
                 isDown: !!downAt,
                 center: downAt ? downAt : [area.x[2] * w, area.y[2] * h],
                 delta: lastDelta,
+                delta1: [lastDelta[0]/R, lastDelta[1]/R],
                 dist: lastDist,
                 distRatio,
                 angleRads,
@@ -211,45 +208,53 @@ function virtualGamepad(padConfigs) {
         window.addEventListener(evName, handleTouch);
     }
 
-    /*function printPadsData() {
-        const parts = [];
-        pads.forEach(p => {
-            const d = p.getData();
-            parts.push(`${d.label}: ${d.isDown ? 'Y' : 'N'} ${d.dir} ${d.distRatio.toFixed(2)} ${d.angleDegs.toFixed(0)}`);
-        });
-        log(parts.join('\n'));
-    }
-    setInterval(printPadsData, 50);*/
+    return pads;
 }
 
-const padConfigs = [
-    /* {
-        label: 'X',
-        color: 'red',
+const [pSteer, pAccelBrake, pRecover] = virtualGamepad([
+    {
+        label: 'steer',
+        color: 'cyan',
         area: { x: [0, 0.5], y: [0.5, 1] },
         deadZone: 0,
         fixes: { y: true }
     },
     {
-        label: 'Y',
-        color: 'green,
+        label: 'accel/brake',
+        color: 'yellow',
         area: { x: [0.5, 1], y: [0.5, 1] },
         deadZone: 0,
         fixes: { x: true }
-    }, */
-    {
-        label: 'both',
-        color: 'cyan',
-        area: { x: [0, 1], y: [0.5, 1] },
-        deadZone: 0.2,
-        fixes: { /*start: true*/ }
     },
     {
-        label: 'FIRE',
+        label: 'recover',
         color: 'magenta',
         area: { x: [0, 1], y: [0, 0.5] },
         deadZone: 0,
         fixes: { x: true, y: true }
     }
-];
-virtualGamepad(padConfigs);
+]);
+
+const clamp = (v, m, M) => v < m ? m : v > M ? M : v;
+
+let started = false;
+setInterval(() => {
+    const dS = pSteer.getData();
+    const dAB = pAccelBrake.getData();
+    const dR = pRecover.getData();
+
+    if (!started) {
+        if (dS.isDown || dAB.isDown || dR.isDown) started = true;
+        else return;
+    }
+
+    const steer = dS.delta1[0];
+    //console.warn(`steer ${steer.toFixed(3)}`);
+    window.controller.x = steer;
+    
+    const accBr = dAB.delta1[1];
+    //console.warn(`accBr ${accBr.toFixed(3)}`);
+    window.controller.y = accBr; // clamp(accBr, -1, 1);
+
+    window.controller.b1 = dR.isDown;
+}, 1000 /20);

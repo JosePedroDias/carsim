@@ -82,7 +82,12 @@ Ammo().then((Ammo) => {
         //renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
         renderer.setClearColor(0xbfd1e5);
-        renderer.setPixelRatio(window.devicePixelRatio);
+
+        //renderer.setPixelRatio(1/2); // LOW RES
+        renderer.setPixelRatio(1); // REGULAR (MEDIUM)
+        //renderer.setPixelRatio(window.devicePixelRatio); // RETINA (heavy)
+
+
         renderer.setSize(window.innerWidth, window.innerHeight);
 
         const ambientLight = new THREE.AmbientLight(0x404040);

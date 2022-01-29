@@ -105,7 +105,7 @@
         return { createHorizontalAxis, createVerticalAxis, createButton };
     }
 
-    {
+    if (false) {
         const cuG = createControllerUI(120, 140, 'cu-gamepad');
         const axisX = cuG.createHorizontalAxis([10, 10], -1, 'cyan');
         const axisY =   cuG.createVerticalAxis([10, 30], -1, false, 'magenta');
@@ -122,7 +122,7 @@
         update();
     }
     
-    {
+    if (true) {
         const cuC = createControllerUI(120, 140, 'cu-car');
         const steer = cuC.createHorizontalAxis([10, 10], -1, 'blue');
         const brake =   cuC.createVerticalAxis([10, 30],  0, true, 'red');

@@ -144,17 +144,19 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
             breakingForce = 0;
         } else {
             if (speed > 1) breakingForce = maxBreakingForce * c.y;
-            else           engineForce = maxEngineForce * c.y * -0.5;
+            else           engineForce   = maxEngineForce   * c.y * -0.5;
         }
         vehicleSteering = -c.x * steeringClamp;
         if (c.b1) {
             // recover!
             const rb = vehicle.getRigidBody();
 
-            const ms = rb.getMotionState();
+            /*const ms = rb.getMotionState();
             const wt = new Ammo.btTransform();
             ms.getWorldTransform(wt);
-            const orig = wt.getOrigin();
+            const rot = wt.getRotation();
+            const rotAxis = rot.getAxis();
+            const angle = rot.getAngle();*/
 
             // raise the car a bit
             const vec = new Ammo.btVector3(0, 4, 0);

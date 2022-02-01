@@ -142,7 +142,6 @@ Ammo().then(
         renderer.setPixelRatio(1); // REGULAR (MEDIUM)
         //renderer.setPixelRatio(window.devicePixelRatio); // RETINA (heavy)
 
-
         renderer.setSize(window.innerWidth, window.innerHeight);
 
         const ambientLight = new THREE.AmbientLight(0x404040);

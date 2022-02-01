@@ -31,11 +31,23 @@ interface Element {
 // should be using this https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/three/src
 
 declare module THREE {
-    class Node {
+    class Object3d {
+        parent: Object3d;
+        children:Array<Object3d>;
         position: Vector3;
+        scale: Vector3;
+        up:Vector3;
+        quaternion: Quaternion;
+        rotation : Euler;
+        matrix:Matrix4;
+        visible:boolean;
+        castShadow: boolean;
+        receiveShadow:boolean;
         userData: any;
     }
-    class Light extends Node {
+    class Euler {}
+    class Matrix4 {}
+    class Light extends Object3d {
         castShadow: boolean;
         shadow: any;
     }
@@ -70,10 +82,8 @@ declare module THREE {
         constructor(a:number, b:number, c:number, d:number);
     }
 
-    class Mesh {
+    class Mesh extends Object3d {
         constructor(g:Geometry, m:Material);
-        castShadow: boolean;
-        receiveShadow:boolean;
         position:Vector3;
         quaternion:Quaternion;
         userData: any;
@@ -89,13 +99,15 @@ declare module THREE {
     }
 
     class Clock {
-        getDelta: () => number;
+        getDelta():number;
     }
-    class Camera extends Node {
-
+    class Camera extends Object3d {
+        aspect: number;
+        updateProjectionMatrix();
     }
     class PerspectiveCamera extends Camera {
         constructor(fov:number, ar:number, near?:number, far?:number);
+        lookAt(v:Vector3);
     }
 
     class Raycaster {
@@ -113,12 +125,38 @@ declare module THREE {
         y: number;
         z: number;
         w: number;
-        set: (x?:number, y?:number, z?:number, w?:number) => void;
+
+        static slerpFlat(dst:Array, dstOffset:number, src0:Array, srcOffset0:number, src1:Array, srcOffset1:number, t:number);
+
         copy(q:Quaternion);
-        setFromAxisAngle: (uy: any, PI: number) => void;
+        angleTo(q:Quaternion):number;
+        clone():Quaternion;
+        conjugate():Quaternion;
+        equals(v:Quaternion):boolean;
+        dot(v:Quaternion):number;
+        fromArray(array:Array, offset:number):Quaternion;
+        identity():Quaternion;
+        invert():Quaternion;
+        length():number;
+        lengthSq():Float;
+        normalize():Quaternion;
+        multiply(q:Quaternion):Quaternion;
+        multiplyQuaternions(a:Quaternion, b:Quaternion):Quaternion;
+        premultiply(q:Quaternion):Quaternion;
+        random():Quaternion;
+        rotateTowards(q:Quaternion, step:number):Quaternion;
+        slerp(qb:Quaternion, t:number ):Quaternion;
+        slerpQuaternions ( qa : Quaternion, qb : Quaternion, t : Float ) : this
+        set:(x?:number, y?:number, z?:number, w?:number) => void;
+        setFromAxisAngle:(uy: any, PI: number);
+        setFromEuler(euler: Euler): Quaternion;
+        setFromRotationMatrix(m:Matrix4):Quaternion;
+        setFromUnitVectors(vFrom : Vector3, vTo:Vector3):Quaternion;
+        toArray(array: Array, offset: number):Array;
+        fromBufferAttribute(attribute: BufferAttribute, index:number):Quaternion;
     }
     class Scene {
-        add: (o:any) => void;
+        add(o:any);
     }
     class TextureLoader {
         load(url:string, cb:Function);
@@ -128,10 +166,12 @@ declare module THREE {
         constructor(x:number, y:number);
         x: number;
         y: number;
-        set: (x?:number, y?:number) => void;
         add(v:Vector2);
-        multiplyScalar(n:number);
         copy(v:Vector2);
+        clone():Vector3;
+        lerp(v:Vector2, r:number);
+        multiplyScalar(n:number);
+        set(x?:number, y?:number);
     }
     class Vector3 {
         constructor();
@@ -139,10 +179,12 @@ declare module THREE {
         x: number;
         y: number;
         z: number;
-        set: (x?:number, y?:number, z?:number) => void;
         add(v:Vector3);
-        multiplyScalar(n:number);
         copy(v:Vector3);
+        clone():Vector3;
+        lerp(v:Vector3, r:number);
+        multiplyScalar(n:number);
+        set(x?:number, y?:number, z?:number);
     }
     class WebGLRenderer {
         constructor(o:Object);
@@ -154,6 +196,10 @@ declare module THREE {
         setPixelRatio(rez:number);
         setClearColor(color:number);
     }
+    class GridHelper {
+        constructor(w:number, h:number);
+    }
+    class AxesHelper {}
 }
 
 declare class Stats {

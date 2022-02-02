@@ -22,7 +22,7 @@ const CM_STATIC = 0;
 const CM_ONBOARD = 1;
 const CM_CHASE = 2;
 
-let CAMERA_MODE = CM_STATIC; // CM_STATIC CM_ONBOARD
+let CAMERA_MODE = CM_CHASE; // CM_STATIC CM_ONBOARD CM_CHASE
 
 /** @type {{[name: string]: number }} */
 window.userIndices = {
@@ -57,9 +57,21 @@ Ammo().then(
 
     // Graphics constiables
     let stats;
-    let camera, scene, renderer;
+
+    /** @type {THREE.PerspectiveCamera} */
+    let camera;
+
+    /** @type {THREE.Scene} */
+    let scene;
+
+    /** @type {THREE.WebGLRenderer} */
+    let renderer;
+
+    /** @type {THREE.Mesh} */
     let chassisMesh;
+
     const clock = new THREE.Clock();
+
     const ZERO_QUATERNION = new THREE.Quaternion(0, 0, 0, 1);
  
     // Physics constiables
@@ -91,12 +103,17 @@ Ammo().then(
         lastNextCameraT = t;
 
         if (CAMERA_MODE === CM_STATIC) CAMERA_MODE = CM_ONBOARD;
+        else if (CAMERA_MODE === CM_ONBOARD) CAMERA_MODE = CM_CHASE;
         else CAMERA_MODE = CM_STATIC;
 
         if (CAMERA_MODE === CM_STATIC) {
             camera.position.x = STATIC_CAM_POSITION[0];
             camera.position.y = STATIC_CAM_POSITION[1];
             camera.position.z = STATIC_CAM_POSITION[2];
+        } else if (CAMERA_MODE === CM_ONBOARD) {
+            camera.fov = 90;
+        } else {
+            camera.fov = 60;
         }
     }
 
@@ -167,69 +184,6 @@ Ammo().then(
         stats.domElement.style.top = '0px';
         document.body.appendChild(stats.domElement);
 
-        /*
-        const raycaster = new THREE.Raycaster();
-        const mouseCoords = new THREE.Vector2()
-        const pos = new THREE.Vector3();
-
-        function createBall(pos){
-            const radius = 0.6;
-            const quat = { x: 0, y: 0, z: 0, w: 1 };
-            const mass = 50;
-
-            //threeJS Section
-            let ball = new THREE.Mesh(new THREE.SphereBufferGeometry(radius), new THREE.MeshPhongMaterial({color: 0x05ff1e}));
-            ball.position.set(pos.x, pos.y, pos.z);
-            ball.castShadow = true;
-            ball.receiveShadow = true;
-            scene.add(ball);
-
-            //Ammojs Section
-            const transform = new Ammo.btTransform();
-            transform.setIdentity();
-            transform.setOrigin( new Ammo.btVector3(pos.x, pos.y, pos.z) );
-            transform.setRotation( new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w) );
-            const motionState = new Ammo.btDefaultMotionState(transform);
-
-            const colShape = new Ammo.btSphereShape(radius);
-            colShape.setMargin(0.05);
-
-            const localInertia = new Ammo.btVector3(0, 0, 0);
-            colShape.calculateLocalInertia(mass, localInertia);
-
-            const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, colShape, localInertia);
-            const body = new Ammo.btRigidBody(rbInfo);
-
-            body.setFriction(4);
-            body.setRollingFriction(10);
-
-            body.setActivationState(DISABLE_DEACTIVATION);
-
-            physicsWorld.addRigidBody(body);
-            dynamicObjects.push(ball);
-            
-            ball.userData.physicsBody = body;
-            ball.userData.tag = 'ball';
-            
-            return ball;
-        }
-
-        window.addEventListener('mousedown', (event) =>{
-            mouseCoords.set( (event.clientX / window.innerWidth) * 2 -1, -(event.clientY / window.innerHeight ) * 2 + 1);
-            raycaster.setFromCamera(mouseCoords, camera);
-
-            // Create a ball 
-            pos.copy(raycaster.ray.direction);
-            pos.add(raycaster.ray.origin);
-            const ball = createBall(pos);
-            
-            //shoot out the ball
-            let ballBody = ball.userData.physicsBody;
-            pos.copy(raycaster.ray.direction);
-            pos.multiplyScalar(40);
-            ballBody.setLinearVelocity( new Ammo.btVector3(pos.x, pos.y, pos.z) );
-        });
-        */
 
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -339,28 +293,42 @@ Ammo().then(
             }
         }
 
+
         if (CAMERA_MODE === CM_STATIC) {
-            // static cam looking at car
             camera.lookAt(chassisMesh.position);
         }
-        else if (CAMERA_MODE === CM_ONBOARD) {
-            // camera in car
-            const chassisPos = chassisMesh.position.clone();
+        else {
+            const cob = CAMERA_MODE === CM_ONBOARD;
+
+            const stiffness = cob ? 0.8 : 0.04;
+
+            const qq = chassisMesh.quaternion.clone().multiply(dq);
+            camera.quaternion.slerp(qq, stiffness);
+
+            let sp = window.carStats.speed || 0;
+            let spSign = Math.sign(sp);
+            if (Math.abs(sp) < 2) {
+                spSign = 1;
+                sp = spSign * 2;
+            }
+            
             const chassisDir = new THREE.Vector3();
             chassisMesh.getWorldDirection(chassisDir);
-            chassisDir.multiplyScalar(-2);
-            chassisPos.add(chassisDir);
 
-            camera.position.x = chassisPos.x;
-            camera.position.y = chassisPos.y + 1.5;
-            camera.position.z = chassisPos.z;
+            const camPos = chassisMesh.position.clone();
+            const dy = 0.6 + (cob ? 0.2 : (Math.abs(sp)*0.1))
+            camPos.y += dy;
+
+            const deltaFront = chassisDir.clone().multiplyScalar(cob ? 0.4*spSign : (-0.9*spSign -0.1*sp) );
+            camPos.add(deltaFront);
             
-            // set camera direction same as chassis direction
-            const qq = chassisMesh.quaternion.clone().multiply(dq);
-            camera.quaternion.slerp(qq, 0.08);
-        }
-        else {
-            // chase
+            camera.position.lerp(camPos, stiffness);
+
+            const camTarget = chassisMesh.position.clone();
+            camTarget.y += dy * (cob ? 1 : 0.33);
+            const deltaTarget = chassisDir.clone().multiplyScalar(spSign);
+            camTarget.add(deltaTarget);
+            camera.lookAt(camTarget);
         }
 
         // detectCollision();

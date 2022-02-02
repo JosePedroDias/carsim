@@ -6,6 +6,9 @@ interface Window {
         b1: boolean,
         b2: boolean
     }
+    carStats: {
+        speed: number;
+    }
     cuC: {
         steer(v:number);
         accel(v:number);
@@ -44,6 +47,7 @@ declare module THREE {
         castShadow: boolean;
         receiveShadow:boolean;
         userData: any;
+        getWorldDirection(v:Vector3);
     }
     class Euler {}
     class Matrix4 {}
@@ -107,6 +111,7 @@ declare module THREE {
     }
     class PerspectiveCamera extends Camera {
         constructor(fov:number, ar:number, near?:number, far?:number);
+        fov: number;
         lookAt(v:Vector3);
     }
 
@@ -192,6 +197,7 @@ declare module THREE {
         gammaInput:boolean;
         gammaOutput:boolean;
         shadowMap:any;
+        render(s:Scene, c:Camera);
         setSize(w:number, h:number);
         setPixelRatio(rez:number);
         setClearColor(color:number);

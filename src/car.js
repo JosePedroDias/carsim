@@ -120,6 +120,8 @@ function createVehicle(physicsWorld, scene, syncList, pos, quat) {
     function sync(dt) {
         const speed = vehicle.getCurrentSpeedKmHour();
 
+        window.carStats.speed = speed;
+
         window.carHud.changeSpeed(speed);
 
         breakingForce = 0;

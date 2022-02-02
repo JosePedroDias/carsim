@@ -13,18 +13,19 @@ This is my nth attempt so don't expect too much...
     - [ ] car mods and visuals (rally, offroad, bus)
     - [ ] EVENTUALLY gears/rpms and their overlays (more relevant once engine sounds exist)
 - physics
+    - [x] basic contact collision
     - [ ] detect passing through waypoints ONGOING
 - controls
-    - [ ] reposition car ONGOING
     - [x] support keys
     - [x] support gamepad
     - [x] support virtual gamepad with touch
+    - [x] reposition car, change cam
 - camera
-    - [x] fixed point - look at car
-    - [ ] driver - attached to car WIP
-    - [ ] chase cam
+    - [x] fixed point - (improve: have several world positions, pick closest to car)
+    - [x] onboard
+    - [x] chase cam
 - GUI
-    - [ ] basic velocimeter overlay
+    - [x] basic velocimeter overlay
 - sound generation
     - [ ] engine sound
     - [ ] braking
